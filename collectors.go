@@ -1,0 +1,89 @@
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"os"
+	"os/exec"
+	"strings"
+	"time"
+
+	"github.com/mtvrsh/dashboard/api"
+)
+
+func getSystemInfo(mountpoints []string) (api.SystemStatus, error) {
+	stats := api.SystemStatus{}
+
+	du, err := getDisksUsage(mountpoints)
+	if err != nil {
+		return stats, fmt.Errorf("failed to get disk usage: %w", err)
+	}
+	stats.DisksUsage = du
+
+	uptime, err := getSystemUptime()
+	if err != nil {
+		return stats, fmt.Errorf("failed to get system uptime: %w", err)
+	}
+	stats.Uptime = roundAndPretty(uptime)
+
+	return stats, nil
+}
+
+func getDisksUsage(mounts []string) (map[string]api.DiskUsage, error) {
+	diskUsage := map[string]api.DiskUsage{}
+	df, err := exec.Command("df", "-h").Output()
+	if err != nil {
+		return diskUsage, err
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(df))
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Fields(line)
+		if len(fields) < 6 {
+			return diskUsage, fmt.Errorf("invalid output from df")
+		}
+		for _, mount := range mounts {
+			if mount == fields[5] {
+				du := api.DiskUsage{
+					Total:       fields[1],
+					Used:        fields[2],
+					UsedPercent: fields[4],
+					Free:        fields[3],
+				}
+				diskUsage[mount] = du
+				continue
+			}
+		}
+	}
+	return diskUsage, nil
+}
+
+func getSystemUptime() (time.Duration, error) {
+	data, err := os.ReadFile("/proc/uptime")
+	if err != nil {
+		return 0, fmt.Errorf("reading /proc/uptime: %w", err)
+	}
+
+	fields := strings.Fields(string(data))
+	if len(fields) < 1 {
+		return 0, fmt.Errorf("got %d fields instead of 2", len(fields))
+	}
+
+	uptime, err := time.ParseDuration(fields[0] + "s")
+	if err != nil {
+		return 0, fmt.Errorf("parsing time: %w", err)
+	}
+	return uptime, nil
+}
+
+func roundAndPretty(t time.Duration) string {
+	s := t.Round(time.Minute).String()
+	ss := strings.SplitAfter(s, "h")
+	if len(ss) == 1 {
+		return s
+	}
+
+	return fmt.Sprintf("%s %s", ss[0], strings.TrimSuffix(ss[1], "0s"))
+}

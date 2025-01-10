@@ -1,0 +1,49 @@
+body {
+  background-color: #fbf1c7;
+  margin: 0;
+  color: #3c3836;
+}
+
+.main {
+  background-color: #ebdbb2;
+  border-radius: 3px;
+  margin: auto;
+  max-width: 300px;
+  padding: 20px;
+  text-align: center;
+}
+
+button, select {
+  background-color: #689d6a;
+  border: none;
+  border-radius: 3px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+button:hover, select:hover {
+  background-color: #8ec07c;
+}
+
+.status {
+  text-align: left;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #282828;
+    color: #ebdbb2;
+  }
+
+  .main {
+    background-color: #3c3836;
+  }
+
+  button, select {
+    background-color: #689d6a;
+  }
+
+  button:hover, select:hover {
+    background-color: #427b58;
+  }
+}

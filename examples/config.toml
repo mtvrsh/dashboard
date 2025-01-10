@@ -1,0 +1,5 @@
+commands.date = ["date"]
+commands.touch = ["sh", "-c", "date > /tmp/dashboard"]
+commands.rm = ["rm", "/tmp/dashboard"]
+watch-mountpoints = ["/"]
+server-root = "static/"
