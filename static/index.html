@@ -8,9 +8,12 @@
 </head>
 <body>
     <div class="main">
-        <select id="select-command"></select>
-        <button id="execute-command">Execute</button>
-        <button id="fetch-status">Fetch</button>
+        <span id=hostname>Server</span>
+        <span id=uptime></span>
+        <div class=buttons>
+            <select id="select-command"></select>
+            <button id="execute-command">Execute</button>
+        </div>
         <div class="status">
             <pre id="status-output"></pre>
         </div>

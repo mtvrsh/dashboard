@@ -16,19 +16,22 @@ async function fetchCommands() {
   }
 }
 
-document.getElementById("fetch-status").addEventListener("click", async () => {
+async function fetchStatus() {
+  fetchCommands();
   try {
     const response = await fetch("/system-status");
     if (!response.ok) {
       throw new Error(`/system-status request failed: ${response.status}`);
     }
     const data = await response.json();
+    document.getElementById("hostname").textContent = "Host: " + data.Hostname;
+    document.getElementById("uptime").textContent = "Uptime: " + data.Uptime;
     document.getElementById("status-output").textContent = JSON.stringify(data, null, 2);
   } catch (error) {
     console.error("fetch-status:", error);
     document.getElementById("status-output").textContent = "Fetching error";
   }
-});
+}
 
 document.getElementById("execute-command").addEventListener("click", async () => {
   try {
@@ -44,4 +47,4 @@ document.getElementById("execute-command").addEventListener("click", async () =>
   }
 });
 
-window.onload = fetchCommands;
+window.onload = fetchStatus;

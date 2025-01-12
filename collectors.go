@@ -21,11 +21,16 @@ func getSystemInfo(mountpoints []string) (api.SystemStatus, error) {
 	}
 	stats.DisksUsage = du
 
+	stats.Hostname, err = os.Hostname()
+	if err != nil {
+		return stats, fmt.Errorf("failed to get hostname: %w", err)
+	}
+
 	uptime, err := getSystemUptime()
 	if err != nil {
 		return stats, fmt.Errorf("failed to get system uptime: %w", err)
 	}
-	stats.Uptime = roundAndPretty(uptime)
+	stats.Uptime = prettyPrintDuration(uptime)
 
 	return stats, nil
 }
@@ -78,12 +83,27 @@ func getSystemUptime() (time.Duration, error) {
 	return uptime, nil
 }
 
-func roundAndPretty(t time.Duration) string {
-	s := t.Round(time.Minute).String()
-	ss := strings.SplitAfter(s, "h")
-	if len(ss) == 1 {
-		return s
+// truncated to 1m, human readable duraton string
+func prettyPrintDuration(d time.Duration) string {
+	result := ""
+	if d < 0 {
+		d = d.Abs()
+		result = "-"
 	}
+	totalMinutes := int(d.Minutes())
 
-	return fmt.Sprintf("%s %s", ss[0], strings.TrimSuffix(ss[1], "0s"))
+	days := totalMinutes / (24 * 60)
+	hours := (totalMinutes % (24 * 60)) / 60
+	minutes := (totalMinutes % 60)
+
+	if days > 0 {
+		result += fmt.Sprintf("%dd ", days)
+	}
+	if hours > 0 {
+		result += fmt.Sprintf("%dh ", hours)
+	}
+	if minutes > 0 {
+		result += fmt.Sprintf("%dm ", minutes)
+	}
+	return strings.TrimSuffix(result, " ")
 }
