@@ -24,19 +24,20 @@ func (s *server) serve() error {
 	}
 	http.HandleFunc("GET /commands", s.commandsHandler)
 	http.HandleFunc("PUT /command/{command}", s.commandHandler)
-	http.HandleFunc("GET /system-status", s.systemStatusHandler)
+	http.HandleFunc("GET /all", s.allHandler)
 
 	addr := net.JoinHostPort(fmt.Sprint(s.config.Address), fmt.Sprint(s.config.Port))
 	return http.ListenAndServe(addr, nil)
 }
 
-func (s *server) systemStatusHandler(w http.ResponseWriter, r *http.Request) {
+func (s *server) allHandler(w http.ResponseWriter, r *http.Request) {
 	all, err := getSystemInfo(s.config.WatchMountpoints)
 	if err != nil {
 		log.Printf("collection failed %v", err)
 		http.Error(w, "Failed to collect data", http.StatusInternalServerError)
 		return
 	}
+	all.Commands = s.getCommands()
 
 	data, err := json.Marshal(all)
 	if err != nil {
@@ -51,11 +52,7 @@ func (s *server) systemStatusHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) commandsHandler(w http.ResponseWriter, r *http.Request) {
-	commands := make([]string, 0, len(s.config.Commands))
-	for k := range s.config.Commands {
-		commands = append(commands, k)
-	}
-
+	commands := s.getCommands()
 	data, err := json.Marshal(commands)
 	if err != nil {
 		log.Printf("json encoding failed: %v", err)
@@ -66,6 +63,14 @@ func (s *server) commandsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("failed to write response: %v", err)
 	}
+}
+
+func (s *server) getCommands() []string {
+	commands := make([]string, 0, len(s.config.Commands))
+	for k := range s.config.Commands {
+		commands = append(commands, k)
+	}
+	return commands
 }
 
 func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {

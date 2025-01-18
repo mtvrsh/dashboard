@@ -1,32 +1,19 @@
-async function fetchCommands() {
+async function fetchDashboardData() {
   try {
-    const response = await fetch("/commands");
+    const response = await fetch("/all");
     if (!response.ok) {
-      throw new Error(`/commands request failed: ${response.status}`);
+      throw new Error(`/all request failed: ${response.status}`);
     }
-    const commands = await response.json();
-    commands.forEach(command => {
+    const data = await response.json();
+    document.getElementById("hostname").textContent = "Host: " + data.Hostname;
+    document.getElementById("uptime").textContent = "Uptime: " + data.Uptime;
+    fillDiskUsageTable(data);
+    data.Commands.forEach(command => {
       const option = document.createElement("option");
       option.value = command;
       option.textContent = command;
       document.getElementById("select-command").appendChild(option);
     });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function fetchStatus() {
-  fetchCommands();
-  try {
-    const response = await fetch("/system-status");
-    if (!response.ok) {
-      throw new Error(`/system-status request failed: ${response.status}`);
-    }
-    const status = await response.json();
-    document.getElementById("hostname").textContent = "Host: " + status.Hostname;
-    document.getElementById("uptime").textContent = "Uptime: " + status.Uptime;
-    fillDiskUsageTable(status);
   } catch (error) {
     console.error(error);
     document.getElementById("command-output").textContent = "Fetching error";
@@ -75,4 +62,4 @@ function colorFromPercent(percent) {
   return `rgb(${red}, ${green}, 0)`;
 }
 
-window.onload = fetchStatus;
+window.onload = fetchDashboardData;

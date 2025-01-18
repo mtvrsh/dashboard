@@ -1,11 +1,12 @@
 package api
 
-type SystemStatus struct {
-	Hostname string
-	// DirsInUse map[string]bool
+type All struct {
+	Hostname   string
+	Uptime     string
+	Commands   []string
 	DisksUsage map[string]DiskUsage
+	// DirsInUse map[string]bool
 	// Temperatures map[string]int
-	Uptime string
 }
 
 type DiskUsage struct {

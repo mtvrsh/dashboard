@@ -12,8 +12,8 @@ import (
 	"github.com/mtvrsh/dashboard/api"
 )
 
-func getSystemInfo(mountpoints []string) (api.SystemStatus, error) {
-	stats := api.SystemStatus{}
+func getSystemInfo(mountpoints []string) (api.All, error) {
+	stats := api.All{}
 
 	du, err := getDisksUsage(mountpoints)
 	if err != nil {
