@@ -17,18 +17,18 @@ func getSystemInfo(mountpoints []string) (api.SystemStatus, error) {
 
 	du, err := getDisksUsage(mountpoints)
 	if err != nil {
-		return stats, fmt.Errorf("failed to get disk usage: %w", err)
+		return stats, fmt.Errorf("disk usage: %w", err)
 	}
 	stats.DisksUsage = du
 
 	stats.Hostname, err = os.Hostname()
 	if err != nil {
-		return stats, fmt.Errorf("failed to get hostname: %w", err)
+		return stats, fmt.Errorf("hostname: %w", err)
 	}
 
 	uptime, err := getSystemUptime()
 	if err != nil {
-		return stats, fmt.Errorf("failed to get system uptime: %w", err)
+		return stats, fmt.Errorf("system uptime: %w", err)
 	}
 	stats.Uptime = prettyPrintDuration(uptime)
 

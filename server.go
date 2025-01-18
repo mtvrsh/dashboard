@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os/exec"
+	"strings"
 )
 
 type server struct {
@@ -33,7 +34,7 @@ func (s *server) systemStatusHandler(w http.ResponseWriter, r *http.Request) {
 	all, err := getSystemInfo(s.config.WatchMountpoints)
 	if err != nil {
 		log.Printf("collection failed %v", err)
-		http.Error(w, "failed to collect data", http.StatusInternalServerError)
+		http.Error(w, "Failed to collect data", http.StatusInternalServerError)
 		return
 	}
 
@@ -68,9 +69,10 @@ func (s *server) commandsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {
+	const defaultSize = 256
 	cmdFromPath := s.config.Commands[r.PathValue("command")]
 	if len(cmdFromPath) == 0 {
-		http.Error(w, "command does not exist", http.StatusInternalServerError)
+		http.Error(w, "Command does not exist", http.StatusInternalServerError)
 		return
 	}
 
@@ -79,14 +81,24 @@ func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {
 		command = exec.Command(cmdFromPath[0], cmdFromPath[1:]...)
 	}
 
-	output, err := command.Output()
+	output, err := command.CombinedOutput()
 	if err != nil {
-		log.Printf("command %v failed: %v", command, err)
-		http.Error(w, "failed to execute command", http.StatusInternalServerError)
+		log.Printf("command %q failed: %s: %s", command, err, output)
+		http.Error(w, fmt.Sprintf("$ %v\n%s", strings.Join(command.Args, " "),
+			truncate(string(output), defaultSize, "...")), http.StatusInternalServerError)
 		return
 	}
-	_, err = fmt.Fprintf(w, "command executed successfully\n%s", output)
+	_, err = fmt.Fprintf(w, "$ %v\n%s", strings.Join(command.Args, " "),
+		truncate(string(output), defaultSize, "..."))
 	if err != nil {
 		log.Printf("failed to write response: %v", err)
 	}
+}
+
+func truncate(s string, max int, ellip string) string {
+	runes := []rune(s)
+	if len(runes) > max {
+		return string(runes[:max]) + ellip
+	}
+	return s
 }

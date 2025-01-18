@@ -27,21 +27,6 @@ body {
   margin-bottom: 10px;
 }
 
-.buttons {
-  margin-top: 10px;
-  margin-bottom: 70px;
-}
-
-#select-command {
-  float: left;
-  width: 50%;
-}
-
-#execute-command {
-  float: right;
-  width: 50%;
-}
-
 button, select {
   background-color: #689d6a;
   color: #3c3836;
@@ -56,16 +41,27 @@ button:hover, select:hover {
   background-color: #8ec07c;
 }
 
+.buttons {
+  margin-top: 10px;
+  margin-bottom: 70px;
+}
+
+#select-command {
+  float: left;
+  width: 50%;
+}
+
 #execute-command {
-  background-color: #d65d0e;
+  background-color: #b57614;
+  float: right;
+  width: 50%;
 }
 
 #execute-command:hover {
-  background-color: #fe8019;
+  background-color: #d79921;
 }
 
 .status {
-  text-align: left;
   position: relative;
   clear: both;
 }
@@ -76,6 +72,10 @@ th, td {
 
 th:first-child, td:first-child {
   text-align: left;
+}
+
+pre {
+  white-space: pre-wrap;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -12,7 +12,7 @@ async function fetchCommands() {
       document.getElementById("select-command").appendChild(option);
     });
   } catch (error) {
-    console.error("fetchCommands:", error);
+    console.error(error);
   }
 }
 
@@ -28,8 +28,8 @@ async function fetchStatus() {
     document.getElementById("uptime").textContent = "Uptime: " + status.Uptime;
     fillDiskUsageTable(status);
   } catch (error) {
-    console.error("fetch-status:", error);
-    document.getElementById("status-output").textContent = "Fetching error";
+    console.error(error);
+    document.getElementById("command-output").textContent = "Fetching error";
   }
 }
 
@@ -39,11 +39,15 @@ document.getElementById("execute-command").addEventListener("click", async () =>
     const response = await fetch(`/command/${command}`, {
       method: "PUT",
     });
+    document.getElementById("command-output").textContent = await response.text();
     if (!response.ok) {
       throw new Error(`/command/${command} request failed: ${response.status}`);
     }
   } catch (error) {
-    console.error("execute-command:", error);
+    console.error(error);
+    if (error instanceof TypeError) {
+      document.getElementById("command-output").textContent = error.message;
+    }
   }
 });
 
