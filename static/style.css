@@ -11,7 +11,6 @@ body {
   margin: auto;
   max-width: 300px;
   padding: 20px;
-  text-align: center;
 }
 
 #hostname {
@@ -29,10 +28,18 @@ body {
 }
 
 .buttons {
+  margin-top: 10px;
+  margin-bottom: 70px;
+}
+
+#select-command {
+  float: left;
+  width: 50%;
+}
+
+#execute-command {
   float: right;
   width: 50%;
-  margin-top: 10px;
-  margin-bottom: 10px;
 }
 
 button, select {
@@ -40,7 +47,7 @@ button, select {
   color: #3c3836;
   border: none;
   border-radius: 3px;
-  padding: 10px 10px;
+  padding: 5px 5px;
   text-align: center;
   cursor: pointer;
 }
@@ -61,6 +68,14 @@ button:hover, select:hover {
   text-align: left;
   position: relative;
   clear: both;
+}
+
+th, td {
+  text-align: right;
+}
+
+th:first-child, td:first-child {
+  text-align: left;
 }
 
 @media (prefers-color-scheme: dark) {

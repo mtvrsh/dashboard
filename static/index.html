@@ -1,24 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  </head>
+  <body>
     <div class="main">
-        <span id=hostname>Server</span>
-        <span id=uptime></span>
-        <div class=buttons>
-            <select id="select-command"></select>
-            <button id="execute-command">Execute</button>
-        </div>
-        <div class="status">
-            <pre id="status-output"></pre>
-        </div>
+      <span id="hostname">Server</span>
+      <span id="uptime"></span>
+      <div class="buttons">
+        <select id="select-command"></select>
+        <button id="execute-command">Execute</button>
+      </div>
+      <div class="status">
+        <table id="diskUsageTable">
+          <thead>
+            <tr>
+              <th>Filesystem</th>
+              <th>Size</th>
+              <th>Used</th>
+              <th>Avail</th>
+              <th>Use%</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <pre id="status-output"></pre>
+      </div>
     </div>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
-

@@ -35,7 +35,7 @@ func getSystemInfo(mountpoints []string) (api.SystemStatus, error) {
 	return stats, nil
 }
 
-func getDisksUsage(mounts []string) (map[string]api.DiskUsage, error) {
+func getDisksUsage(mountpoints []string) (map[string]api.DiskUsage, error) {
 	diskUsage := map[string]api.DiskUsage{}
 	df, err := exec.Command("df", "-h").Output()
 	if err != nil {
@@ -49,7 +49,7 @@ func getDisksUsage(mounts []string) (map[string]api.DiskUsage, error) {
 		if len(fields) < 6 {
 			return diskUsage, fmt.Errorf("invalid output from df")
 		}
-		for _, mount := range mounts {
+		for _, mount := range mountpoints {
 			if mount == fields[5] {
 				du := api.DiskUsage{
 					Total:       fields[1],

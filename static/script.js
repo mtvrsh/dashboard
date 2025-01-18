@@ -23,10 +23,10 @@ async function fetchStatus() {
     if (!response.ok) {
       throw new Error(`/system-status request failed: ${response.status}`);
     }
-    const data = await response.json();
-    document.getElementById("hostname").textContent = "Host: " + data.Hostname;
-    document.getElementById("uptime").textContent = "Uptime: " + data.Uptime;
-    document.getElementById("status-output").textContent = JSON.stringify(data, null, 2);
+    const status = await response.json();
+    document.getElementById("hostname").textContent = "Host: " + status.Hostname;
+    document.getElementById("uptime").textContent = "Uptime: " + status.Uptime;
+    fillDiskUsageTable(status);
   } catch (error) {
     console.error("fetch-status:", error);
     document.getElementById("status-output").textContent = "Fetching error";
@@ -46,5 +46,29 @@ document.getElementById("execute-command").addEventListener("click", async () =>
     console.error("execute-command:", error);
   }
 });
+
+function fillDiskUsageTable(data) {
+  const tableBody = document.getElementById("diskUsageTable").getElementsByTagName("tbody")[0];
+
+  for (const [mountPoint, usage] of Object.entries(data.DisksUsage)) {
+    const row = tableBody.insertRow();
+    row.insertCell(0).textContent = mountPoint;
+    row.insertCell(1).textContent = usage.Total;
+    row.insertCell(2).textContent = usage.Used;
+    row.insertCell(3).textContent = usage.Free;
+
+    const useCell = row.insertCell(4);
+    useCell.textContent = usage.UsedPercent;
+    useCell.style.color = colorFromPercent(usage.UsedPercent);
+  }
+}
+
+// 0% green -> 100% red
+function colorFromPercent(percent) {
+  percent = parseInt(percent);
+  const red = Math.min(255, Math.floor((percent / 100) * 255));
+  const green = 255 - red;
+  return `rgb(${red}, ${green}, 0)`;
+}
 
 window.onload = fetchStatus;
