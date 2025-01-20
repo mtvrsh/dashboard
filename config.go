@@ -47,7 +47,7 @@ func pprintCommands(cmds map[string][]string) string {
 	}
 	s := "[\n"
 	for k, v := range cmds {
-		s += fmt.Sprintf("\t%v = %+q\n", k, v)
+		s += fmt.Sprintf("  %v = %+q\n", k, v)
 	}
 	s += "]"
 	return s

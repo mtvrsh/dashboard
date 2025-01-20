@@ -8,27 +8,27 @@
   </head>
   <body>
     <div class="main">
-      <span id="hostname">Server</span>
-      <span id="uptime"></span>
+      <div class="header">
+        <span id="hostname">Server</span>
+        <span id="uptime"></span>
+      </div>
       <div class="buttons">
         <select id="select-command"></select>
         <button id="execute-command">Execute</button>
       </div>
-      <div class="system-info">
-        <table id="diskUsageTable">
-          <thead>
-            <tr>
-              <th>Filesystem</th>
-              <th>Size</th>
-              <th>Used</th>
-              <th>Avail</th>
-              <th>Use%</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <pre id="command-output"></pre>
-      </div>
+      <table id="disk-usage">
+        <thead>
+          <tr>
+            <th>Filesystem</th>
+            <th>Size</th>
+            <th>Used</th>
+            <th>Avail</th>
+            <th>Use%</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <pre id="command-output"></pre>
     </div>
     <script src="script.js"></script>
   </body>

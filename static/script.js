@@ -39,18 +39,22 @@ document.getElementById("execute-command").addEventListener("click", async () =>
 });
 
 function fillDiskUsageTable(data) {
-  const tableBody = document.getElementById("diskUsageTable").getElementsByTagName("tbody")[0];
+  const tableBody = document.getElementById("disk-usage").getElementsByTagName("tbody")[0];
 
-  for (const [mountPoint, usage] of Object.entries(data.DisksUsage)) {
-    const row = tableBody.insertRow();
-    row.insertCell(0).textContent = mountPoint;
-    row.insertCell(1).textContent = usage.Total;
-    row.insertCell(2).textContent = usage.Used;
-    row.insertCell(3).textContent = usage.Free;
+  if (Object.keys(data.DisksUsage).length === 0) {
+    document.getElementById("disk-usage").style.display = "none";
+  } else {
+    for (const [mountPoint, usage] of Object.entries(data.DisksUsage)) {
+      const row = tableBody.insertRow();
+      row.insertCell(0).textContent = mountPoint;
+      row.insertCell(1).textContent = usage.Total;
+      row.insertCell(2).textContent = usage.Used;
+      row.insertCell(3).textContent = usage.Free;
 
-    const useCell = row.insertCell(4);
-    useCell.textContent = usage.UsedPercent;
-    useCell.style.color = colorFromPercent(usage.UsedPercent);
+      const useCell = row.insertCell(4);
+      useCell.textContent = usage.UsedPercent;
+      useCell.style.color = colorFromPercent(usage.UsedPercent);
+    }
   }
 }
 
