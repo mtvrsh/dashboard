@@ -7,19 +7,16 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div class="main">
-      <div class="header">
+    <div id="main">
+      <div id="header">
         <span id="hostname">Server</span>
         <span id="uptime"></span>
       </div>
-      <div class="buttons">
-        <select id="select-command"></select>
-        <button id="execute-command">Execute</button>
-      </div>
+      <div id="commands"></div>
       <table id="disk-usage">
         <thead>
           <tr>
-            <th>Filesystem</th>
+            <th>Mounted on</th>
             <th>Size</th>
             <th>Used</th>
             <th>Avail</th>

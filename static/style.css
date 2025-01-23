@@ -5,7 +5,7 @@ body {
   margin: 0;
 }
 
-.main {
+#main {
   background-color: #ebdbb2;
   border-radius: 3px;
   display: flex;
@@ -16,11 +16,11 @@ body {
   width: min-content;
 }
 
-.main > * {
+#main > * {
   flex: 1 1 300px;
 }
 
-.header {
+#header {
   margin-bottom: 5px;
 }
 
@@ -36,9 +36,18 @@ body {
   width: 50%;
 }
 
-button, select {
-  background-color: #689d6a;
-  border: none;
+#commands {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#commands > * {
+  flex: 1;
+}
+
+.command {
+  background-color: #ebdbb2;
+  border: 1px solid #282828;
   border-radius: 3px;
   color: #3c3836;
   cursor: pointer;
@@ -46,23 +55,9 @@ button, select {
   text-align: center;
 }
 
-button:hover, select:hover {
+.command:hover {
+  /* background-color: #d79921; */
   background-color: #8ec07c;
-}
-
-#select-command {
-  float: left;
-  width: 50%;
-}
-
-#execute-command {
-  background-color: #b57614;
-  float: right;
-  width: 50%;
-}
-
-#execute-command:hover {
-  background-color: #d79921;
 }
 
 th, td {
@@ -71,11 +66,12 @@ th, td {
 
 th:first-child, td:first-child {
   text-align: left;
+  white-space: pre;
 }
 
 pre {
-  white-space: pre-wrap;
   margin: 0;
+  white-space: pre-wrap;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -84,11 +80,16 @@ pre {
     color: #ebdbb2;
   }
 
-  .main {
+  #main {
     background-color: #3c3836;
   }
 
-  button, select {
+  .command {
+    background-color: #3c3836;
     color: #ebdbb2;
+  }
+
+  .command:hover {
+    background-color: #689d6a;
   }
 }

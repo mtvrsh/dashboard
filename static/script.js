@@ -9,10 +9,13 @@ async function fetchDashboardData() {
     document.getElementById("uptime").textContent = "Uptime: " + data.Uptime;
     fillDiskUsageTable(data);
     data.Commands.forEach(command => {
-      const option = document.createElement("option");
-      option.value = command;
-      option.textContent = command;
-      document.getElementById("select-command").appendChild(option);
+      const button = document.createElement("button");
+      button.textContent = command;
+      button.classList.add("command");
+      button.onclick = function() {
+        executeCommand(command);
+      };
+      document.getElementById("commands").appendChild(button);
     });
   } catch (error) {
     console.error(error);
@@ -20,9 +23,8 @@ async function fetchDashboardData() {
   }
 }
 
-document.getElementById("execute-command").addEventListener("click", async () => {
+async function executeCommand(command) {
   try {
-    const command = document.getElementById("select-command").value;
     const response = await fetch(`/command/${command}`, {
       method: "PUT",
     });
@@ -36,7 +38,7 @@ document.getElementById("execute-command").addEventListener("click", async () =>
       document.getElementById("command-output").textContent = error.message;
     }
   }
-});
+}
 
 function fillDiskUsageTable(data) {
   const tableBody = document.getElementById("disk-usage").getElementsByTagName("tbody")[0];
