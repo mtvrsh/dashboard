@@ -7,8 +7,6 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-const defaultPort = 8080
-
 type config struct {
 	Address          string
 	Port             uint

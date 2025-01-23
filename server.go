@@ -7,8 +7,11 @@ import (
 	"net"
 	"net/http"
 	"os/exec"
+	"slices"
 	"strings"
 )
+
+const defaultPort = 8080
 
 type server struct {
 	config config
@@ -70,6 +73,7 @@ func (s *server) getCommands() []string {
 	for k := range s.config.Commands {
 		commands = append(commands, k)
 	}
+	slices.Sort(commands)
 	return commands
 }
 

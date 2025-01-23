@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestDurationToString(t *testing.T) {
+func TestPrettyPrintDuration(t *testing.T) {
 	testData := []struct {
 		duration time.Duration
 		expected string
