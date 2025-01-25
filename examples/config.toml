@@ -3,4 +3,3 @@ commands.touch = ["sh", "-c", "date > /tmp/dashboard"]
 commands.rm = ["rm", "/tmp/dashboard"]
 commands.cat = ["cat", "main.go"]
 watch-mountpoints = ["/"]
-server-root = "static/"

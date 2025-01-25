@@ -18,7 +18,7 @@ type server struct {
 }
 
 func newServer() server {
-	return server{config: config{Port: defaultPort}}
+	return server{config: config{Port: defaultPort, ServerRoot: "static/"}}
 }
 
 func (s *server) serve() error {
