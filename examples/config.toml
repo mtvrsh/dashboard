@@ -1,5 +1,17 @@
-commands.date = ["date"]
-commands.touch = ["sh", "-c", "date > /tmp/dashboard"]
-commands.rm = ["rm", "/tmp/dashboard"]
+# default values are commented out
+
+# address = "127.0.0.1"
+# port = 8080
+# server-root = "static/"
+
 commands.cat = ["cat", "main.go"]
+commands.date = ["date"]
+commands.rm = ["rm", "/tmp/dashboard"]
+# by default commands are executed wthout shell
+commands.touch = ["sh", "-c", "date > /tmp/dashboard"]
+
+# WIP, unused
+# watch-dir-usage = []
+
+# mountpoints for which disk usage is displayed
 watch-mountpoints = ["/"]
