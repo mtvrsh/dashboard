@@ -9,7 +9,7 @@ function fetchDashboardData() {
     document.getElementById("uptime").textContent = "Uptime: " + data.Uptime;
     fillDiskUsageTable(data);
     createButtons(data.Commands);
-  }).catch((error) => {
+  }).catch(error => {
     console.error(error);
     document.getElementById("command-output").textContent = "Fetching error";
   });
@@ -30,14 +30,12 @@ function createButtons(commands) {
 function executeCommand(command) {
   fetch(`/command/${command}`, {
     method: "PUT",
-  }).then((response) => {
-    response.text().then(output => {
-      document.getElementById("command-output").textContent = output;
-    })
+  }).then(response => {
+    response.text().then(output => document.getElementById("command-output").textContent = output);
     if (!response.ok) {
       throw new Error(`/command/${command} request failed: ${response.status}`);
     }
-  }).catch((error) => {
+  }).catch(error => {
     console.error(error);
     if (error instanceof TypeError) {
       document.getElementById("command-output").textContent = error.message;
