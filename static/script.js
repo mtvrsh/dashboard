@@ -1,43 +1,48 @@
-async function fetchDashboardData() {
-  try {
-    const response = await fetch("/all");
+function fetchDashboardData() {
+  fetch("/all").then(response => {
     if (!response.ok) {
       throw new Error(`/all request failed: ${response.status}`);
     }
-    const data = await response.json();
+    return response.json();
+  }).then(data => {
     document.getElementById("hostname").textContent = "Host: " + data.Hostname;
     document.getElementById("uptime").textContent = "Uptime: " + data.Uptime;
     fillDiskUsageTable(data);
-    data.Commands.forEach(command => {
-      const button = document.createElement("button");
-      button.textContent = command;
-      button.classList.add("command");
-      button.onclick = function() {
-        executeCommand(command);
-      };
-      document.getElementById("commands").appendChild(button);
-    });
-  } catch (error) {
+    createButtons(data.Commands);
+  }).catch((error) => {
     console.error(error);
     document.getElementById("command-output").textContent = "Fetching error";
-  }
+  });
 }
 
-async function executeCommand(command) {
-  try {
-    const response = await fetch(`/command/${command}`, {
-      method: "PUT",
-    });
-    document.getElementById("command-output").textContent = await response.text();
+function createButtons(commands) {
+  commands.forEach(command => {
+    const button = document.createElement("button");
+    button.textContent = command;
+    button.classList.add("command");
+    button.onclick = function() {
+      executeCommand(command);
+    };
+    document.getElementById("commands").appendChild(button);
+  });
+}
+
+function executeCommand(command) {
+  fetch(`/command/${command}`, {
+    method: "PUT",
+  }).then((response) => {
+    response.text().then(output => {
+      document.getElementById("command-output").textContent = output;
+    })
     if (!response.ok) {
       throw new Error(`/command/${command} request failed: ${response.status}`);
     }
-  } catch (error) {
+  }).catch((error) => {
     console.error(error);
     if (error instanceof TypeError) {
       document.getElementById("command-output").textContent = error.message;
     }
-  }
+  });
 }
 
 function fillDiskUsageTable(data) {
@@ -46,17 +51,17 @@ function fillDiskUsageTable(data) {
   if (Object.keys(data.DisksUsage).length === 0) {
     document.getElementById("disk-usage").style.display = "none";
   } else {
-    for (const [mountPoint, usage] of Object.entries(data.DisksUsage)) {
+    Object.entries(data.DisksUsage).forEach(([mountedOn, diskUsage]) => {
       const row = tableBody.insertRow();
-      row.insertCell(0).textContent = mountPoint;
-      row.insertCell(1).textContent = usage.Total;
-      row.insertCell(2).textContent = usage.Used;
-      row.insertCell(3).textContent = usage.Free;
+      row.insertCell(0).textContent = mountedOn;
+      row.insertCell(1).textContent = diskUsage.Total;
+      row.insertCell(2).textContent = diskUsage.Used;
+      row.insertCell(3).textContent = diskUsage.Free;
 
       const useCell = row.insertCell(4);
-      useCell.textContent = usage.UsedPercent;
-      useCell.style.color = colorFromPercent(usage.UsedPercent);
-    }
+      useCell.textContent = diskUsage.UsedPercent;
+      useCell.style.color = colorFromPercent(diskUsage.UsedPercent);
+    });
   }
 }
 
@@ -68,4 +73,4 @@ function colorFromPercent(percent) {
   return `rgb(${red}, ${green}, 0)`;
 }
 
-window.onload = fetchDashboardData;
+fetchDashboardData();

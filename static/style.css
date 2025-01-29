@@ -1,12 +1,21 @@
+:root {
+  --dark-bg: #282828;
+  --dark-fg: #ebdbb2;
+  --dark-btn: #689d6a;
+  --light-bg: #fbf1c7;
+  --light-fg: #3c3836;
+  --light-btn: #8ec07c; /* #d79921 */
+}
+
 body {
-  background-color: #fbf1c7;
-  color: #3c3836;
+  background-color: var(--light-bg);
+  color: var(--light-fg);
   font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
 }
 
 #main {
-  background-color: #ebdbb2;
+  background-color: var(--dark-fg);
   border-radius: 3px;
   display: flex;
   flex-wrap: wrap;
@@ -46,18 +55,17 @@ body {
 }
 
 .command {
-  background-color: #ebdbb2;
-  border: 1px solid #282828;
+  background-color: var(--dark-fg);
+  border: 1px solid var(--dark-bg);
   border-radius: 3px;
-  color: #3c3836;
+  color: var(--light-fg);
   cursor: pointer;
   padding: 5px;
   text-align: center;
 }
 
 .command:hover {
-  /* background-color: #d79921; */
-  background-color: #8ec07c;
+  background-color: var(--light-btn);
 }
 
 th, td {
@@ -76,20 +84,20 @@ pre {
 
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #282828;
-    color: #ebdbb2;
+    background-color: var(--dark-bg);
+    color: var(--dark-fg);
   }
 
   #main {
-    background-color: #3c3836;
+    background-color: var(--light-fg);
   }
 
   .command {
-    background-color: #3c3836;
-    color: #ebdbb2;
+    background-color: var(--light-fg);
+    color: var(--dark-fg);
   }
 
   .command:hover {
-    background-color: #689d6a;
+    background-color: var(--dark-btn);
   }
 }
