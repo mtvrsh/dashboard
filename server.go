@@ -29,7 +29,7 @@ func (s *server) serve() error {
 	http.HandleFunc("PUT /command/{command}", s.commandHandler)
 	http.HandleFunc("GET /all", s.allHandler)
 
-	addr := net.JoinHostPort(fmt.Sprint(s.config.Address), fmt.Sprint(s.config.Port))
+	addr := net.JoinHostPort(s.config.Address, fmt.Sprint(s.config.Port))
 	return http.ListenAndServe(addr, nil)
 }
 
