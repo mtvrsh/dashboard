@@ -2,7 +2,6 @@
 
 # address = "127.0.0.1"
 # port = 8080
-# server-root = "static/"
 
 commands.cat = ["cat", "main.go"]
 commands.date = ["date"]

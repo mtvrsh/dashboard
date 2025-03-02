@@ -10,7 +10,6 @@ import (
 type config struct {
 	Address          string
 	Port             uint
-	ServerRoot       string `toml:"server-root"`
 	Commands         map[string][]string
 	WatchDirUsage    []string `toml:"watch-dir-usage"`
 	WatchMountpoints []string `toml:"watch-mountpoints"`
@@ -29,10 +28,9 @@ func (s *server) loadConfig(path string) error {
 }
 
 func (c config) String() string {
-	return fmt.Sprintf("address = %q\nport = %v\nserver-root = %q\ncommands = %v\nwatch-dir-usage = %q\nwatch-mountpoints = %q\n",
+	return fmt.Sprintf("address = %q\nport = %v\ncommands = %v\nwatch-dir-usage = %q\nwatch-mountpoints = %q\n",
 		c.Address,
 		c.Port,
-		c.ServerRoot,
 		pprintCommands(c.Commands),
 		c.WatchDirUsage,
 		c.WatchMountpoints,

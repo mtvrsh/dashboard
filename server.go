@@ -1,8 +1,10 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -13,18 +15,19 @@ import (
 
 const defaultPort = 8080
 
+//go:embed static/*
+var content embed.FS
+
 type server struct {
 	config config
 }
 
 func newServer() server {
-	return server{config: config{Port: defaultPort, ServerRoot: "static/"}}
+	return server{config: config{Port: defaultPort}}
 }
 
 func (s *server) serve() error {
-	if s.config.ServerRoot != "" {
-		http.Handle("GET /", http.FileServer(http.Dir(s.config.ServerRoot)))
-	}
+	http.Handle("GET /", staticHandler())
 	http.HandleFunc("GET /commands", s.commandsHandler)
 	http.HandleFunc("PUT /command/{command}", s.commandHandler)
 	http.HandleFunc("GET /all", s.allHandler)
@@ -102,6 +105,14 @@ func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("failed to write response: %v", err)
 	}
+}
+
+func staticHandler() http.Handler {
+	files, err := fs.Sub(content, "static")
+	if err != nil {
+		panic(err)
+	}
+	return http.FileServerFS(files)
 }
 
 func truncate(s string, max int, ellip string) string {
