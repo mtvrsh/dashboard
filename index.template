@@ -15,7 +15,7 @@
       <form id="commands">{{ range .Commands }}
         <button class=command name=command value={{ . }}>{{ . }}</button>{{ end }}
       </form>
-      {{ if .DisksUsage }}<table id="disk-usage">
+      {{- if .DisksUsage }}<table id="disk-usage">
         <thead>
           <tr>
             <th>Mounted on</th>
@@ -35,7 +35,7 @@
           </tr>{{end}}
         </tbody>
       </table>{{ end }}
-      {{ if .CommandStdout }}<pre id="command-output">{{ .CommandStdout }}</pre>{{ end }}
+      {{- if .CommandStdout }}<pre id="command-output">{{ .CommandStdout }}</pre>{{ end }}
     </div>
   </body>
 </html>

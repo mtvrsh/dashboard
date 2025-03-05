@@ -14,6 +14,9 @@ import (
 
 const defaultPort = 8080
 
+//go:embed index.template
+var index string
+
 //go:embed style.css
 var css []byte
 
@@ -27,7 +30,7 @@ func newServer() server {
 }
 
 func (s *server) serve() error {
-	s.main = template.Must(template.New("index.template").ParseFiles("index.template"))
+	s.main = template.Must(template.New("index.template").Parse(index))
 	http.HandleFunc("GET /", s.mainHandler)
 	http.HandleFunc("GET /style.css", s.styleHandler)
 
@@ -70,13 +73,12 @@ func (s *server) getCommands() []string {
 }
 
 func (s *server) execCommand(command string) string {
-	const defaultSize = 256
 	if command == "" {
 		return ""
 	}
 	cmdFromPath := s.config.Commands[command]
 	if len(cmdFromPath) == 0 {
-		log.Printf("unknown command: %q", command)
+		log.Printf("command not declared: %q", command)
 		return ""
 	}
 
@@ -90,13 +92,13 @@ func (s *server) execCommand(command string) string {
 		log.Printf("command %q failed: %s: %s", command, err, output)
 	}
 	return fmt.Sprintf("$ %v\n%s", strings.Join(cmd.Args, " "),
-		truncate(string(output), defaultSize, "..."))
+		truncate(string(output), 256, "..."))
 }
 
-func truncate(s string, max int, ellip string) string {
+func truncate(s string, limit int, ellip string) string {
 	runes := []rune(s)
-	if len(runes) > max {
-		return string(runes[:max]) + ellip
+	if len(runes) > limit {
+		return string(runes[:limit]) + ellip
 	}
 	return s
 }
