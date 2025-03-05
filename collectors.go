@@ -52,10 +52,10 @@ func getDisksUsage(mountpoints []string) (map[string]api.DiskUsage, error) {
 		for _, mount := range mountpoints {
 			if mount == fields[5] {
 				du := api.DiskUsage{
-					Total:       fields[1],
-					Used:        fields[2],
-					UsedPercent: fields[4],
-					Free:        fields[3],
+					Size:       fields[1],
+					Used:       fields[2],
+					Avail:      fields[3],
+					UsePercent: fields[4],
 				}
 				diskUsage[mount] = du
 				continue
