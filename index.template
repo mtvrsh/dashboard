@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="main">
+      <div id="header">
+        <span id="hostname">Host: {{ .Hostname }}</span>
+        <span id="uptime">Uptime: {{ .Uptime }}</span>
+      </div>
+      <form id="commands">{{ range .Commands }}
+        <button class=command name=command value={{ . }}>{{ . }}</button>{{ end }}
+      </form>
+      {{ if .DisksUsage }}<table id="disk-usage">
+        <thead>
+          <tr>
+            <th>Mounted on</th>
+            <th>Size</th>
+            <th>Used</th>
+            <th>Avail</th>
+            <th>Use%</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ range $key, $value := .DisksUsage }}<tr>
+            <th>{{ $key }}</th>
+            <td>{{ .Size }}</td>
+            <td>{{ .Used }}</td>
+            <td>{{ .Avail }}</td>
+            <td style={{.UsePercentStyle}}>{{ .UsePercent }}</td>
+          </tr>{{end}}
+        </tbody>
+      </table>{{ end }}
+      {{ if .CommandStdout }}<pre id="command-output">{{ .CommandStdout }}</pre>{{ end }}
+    </div>
+  </body>
+</html>
