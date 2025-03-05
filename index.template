@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="main">
+      <div id="header">
+        <span id="hostname">Host: {{ .Hostname }}</span>
+        <span id="uptime">Uptime: {{ .Uptime }}</span>
+      </div>
+      <form id="commands" method="post" target="htmz">{{ range .Commands }}
+        <button class="command" formaction="command/{{ . }}#command-output">{{ . }}</button>{{ end }}
+      </form>
+      {{- if .DisksUsage }}
+      <table id="disk-usage">
+        <thead>
+          <tr>
+            <th>Mounted on</th>
+            <th>Size</th>
+            <th>Used</th>
+            <th>Avail</th>
+            <th>Use%</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ range $key, $value := .DisksUsage }}<tr>
+            <td>{{ $key }}</td>
+            <td>{{ .Size }}</td>
+            <td>{{ .Used }}</td>
+            <td>{{ .Avail }}</td>
+            <td style={{.UsePercentStyle}}>{{ .UsePercent }}</td>
+          </tr>{{end}}
+        </tbody>
+      </table>{{ end }}
+      <pre id="command-output"></pre>
+    </div>
+    <iframe hidden name="htmz" onload="window.htmz(this)"></iframe>
+    <script>
+    function htmz(frame) {
+        if (frame.contentWindow.location.href === "about:blank") return;
+        setTimeout(() => {
+          document
+            .querySelector(frame.contentWindow.location.hash || null)
+            ?.replaceWith(...frame.contentDocument.body.childNodes);
+          frame.remove();
+          document.body.appendChild(frame);
+        });
+      }
+    </script>
+  </body>
+</html>
