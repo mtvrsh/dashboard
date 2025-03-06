@@ -10,8 +10,8 @@ type All struct {
 }
 
 type DiskUsage struct {
-	Total       string
-	Used        string
-	UsedPercent string
-	Free        string
+	Size       string
+	Used       string
+	UsePercent string
+	Avail      string
 }

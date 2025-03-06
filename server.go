@@ -93,15 +93,15 @@ func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {
 		command = exec.Command(cmdFromPath[0], cmdFromPath[1:]...)
 	}
 
-	output, err := command.CombinedOutput()
+	rawOutput, err := command.CombinedOutput()
+	output := fmt.Sprintf("$ %v\n%s", strings.Join(command.Args, " "),
+		truncate(string(rawOutput), defaultSize, "..."))
 	if err != nil {
-		log.Printf("command %q failed: %s: %s", command, err, output)
-		http.Error(w, fmt.Sprintf("$ %v\n%s", strings.Join(command.Args, " "),
-			truncate(string(output), defaultSize, "...")), http.StatusInternalServerError)
+		log.Printf("command %q failed: %s: %s", command, err, rawOutput)
+		http.Error(w, strings.TrimSpace(output), http.StatusInternalServerError)
 		return
 	}
-	_, err = fmt.Fprintf(w, "$ %v\n%s", strings.Join(command.Args, " "),
-		truncate(string(output), defaultSize, "..."))
+	_, err = fmt.Fprint(w, output)
 	if err != nil {
 		log.Printf("failed to write response: %v", err)
 	}

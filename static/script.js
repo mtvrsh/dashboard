@@ -52,13 +52,13 @@ function fillDiskUsageTable(data) {
     Object.entries(data.DisksUsage).forEach(([mountedOn, diskUsage]) => {
       const row = tableBody.insertRow();
       row.insertCell(0).textContent = mountedOn;
-      row.insertCell(1).textContent = diskUsage.Total;
+      row.insertCell(1).textContent = diskUsage.Size;
       row.insertCell(2).textContent = diskUsage.Used;
-      row.insertCell(3).textContent = diskUsage.Free;
+      row.insertCell(3).textContent = diskUsage.Avail;
 
       const useCell = row.insertCell(4);
-      useCell.textContent = diskUsage.UsedPercent;
-      useCell.style.color = colorFromPercent(diskUsage.UsedPercent);
+      useCell.textContent = diskUsage.UsePercent;
+      useCell.style.color = colorFromPercent(diskUsage.UsePercent);
     });
   }
 }
