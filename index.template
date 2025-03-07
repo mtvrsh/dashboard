@@ -27,7 +27,7 @@
         </thead>
         <tbody>
           {{ range $key, $value := .DisksUsage }}<tr>
-            <th>{{ $key }}</th>
+            <td>{{ $key }}</td>
             <td>{{ .Size }}</td>
             <td>{{ .Used }}</td>
             <td>{{ .Avail }}</td>
