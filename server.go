@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"slices"
 	"strings"
@@ -46,7 +47,14 @@ func (s *server) mainHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	all.Commands = s.getCommands()
-	all.CommandStdout = s.execCommand(r.FormValue("command"))
+
+	command := r.FormValue("command")
+	if command != "" {
+		commandOutput := s.execCommand(command)
+		http.Redirect(w, r, "/?output="+url.QueryEscape(commandOutput), http.StatusSeeOther)
+		return
+	}
+	all.CommandOutput = r.FormValue("output")
 
 	err = s.main.Execute(w, all)
 	if err != nil {
@@ -73,9 +81,6 @@ func (s *server) getCommands() []string {
 }
 
 func (s *server) execCommand(command string) string {
-	if command == "" {
-		return ""
-	}
 	cmdFromPath := s.config.Commands[command]
 	if len(cmdFromPath) == 0 {
 		log.Printf("command not declared: %q", command)
@@ -92,7 +97,7 @@ func (s *server) execCommand(command string) string {
 		log.Printf("command %q failed: %s: %s", command, err, output)
 	}
 	return fmt.Sprintf("$ %v\n%s", strings.Join(cmd.Args, " "),
-		truncate(string(output), 256, "..."))
+		truncate(string(output), 2000, "..."))
 }
 
 func truncate(s string, limit int, ellip string) string {
