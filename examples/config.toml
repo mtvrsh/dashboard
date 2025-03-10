@@ -3,14 +3,12 @@
 # address = "127.0.0.1"
 # port = 8080
 
-commands.cat = ["cat", "main.go"]
-commands.date = ["date"]
-commands.rm = ["rm", "/tmp/dashboard"]
-# by default commands are executed wthout shell
-commands.touch = ["sh", "-c", "date > /tmp/dashboard"]
-
-# WIP, unused
-# watch-dir-usage = []
-
 # mountpoints for which disk usage is displayed
 watch-mountpoints = ["/"]
+
+[commands]
+cat = ["cat", "main.go"]
+date = ["date"]
+rm = ["rm", "/tmp/dashboard"]
+# by default commands are executed wthout shell
+touch = ["sh", "-c", "date > /tmp/dashboard"]

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 )
@@ -11,28 +11,28 @@ type config struct {
 	Address          string
 	Port             uint
 	Commands         map[string][]string
-	WatchDirUsage    []string `toml:"watch-dir-usage"`
 	WatchMountpoints []string `toml:"watch-mountpoints"`
 }
 
 func (s *server) loadConfig(path string) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return fmt.Errorf("reading: %w", err)
-	}
-	err = toml.Unmarshal(data, &s.config)
+	meta, err := toml.DecodeFile(path, &s.config)
 	if err != nil {
 		return fmt.Errorf("decoding: %w", err)
+	}
+
+	undecoded := meta.Undecoded()
+	if len(undecoded) != 0 {
+		pretty := strings.Trim(fmt.Sprintf("%q", undecoded), "[]")
+		return fmt.Errorf("unknown fields: %v", pretty)
 	}
 	return nil
 }
 
 func (c config) String() string {
-	return fmt.Sprintf("address = %q\nport = %v\ncommands = %v\nwatch-dir-usage = %q\nwatch-mountpoints = %q\n",
+	return fmt.Sprintf("address = %q\nport = %v\ncommands = %v\nwatch-mountpoints = %q\n",
 		c.Address,
 		c.Port,
 		pprintCommands(c.Commands),
-		c.WatchDirUsage,
 		c.WatchMountpoints,
 	)
 }
