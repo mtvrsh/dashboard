@@ -55,9 +55,8 @@ func (s *server) mainHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
 	cmd := s.execCommand(r.PathValue("command"))
-	fmt.Fprintf(w, "<pre id=command-output>%s</pre>", cmd)
+	fmt.Fprintf(w, "<!DOCTYPE html><pre id=command-output>%s</pre>", cmd)
 }
 
 func (s *server) styleHandler(w http.ResponseWriter, _ *http.Request) {

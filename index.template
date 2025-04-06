@@ -39,5 +39,18 @@
       <pre id="command-output"></pre>
     </div>
     <iframe hidden name=htmz onload="setTimeout(()=>document.querySelector(contentWindow.location.hash||null)?.replaceWith(...contentDocument.body.childNodes))"></iframe>
+    <iframe hidden="" name="htmz" onload="window.htmz(this)"></iframe>
+    <script>
+    function htmz(frame) {
+        if (frame.contentWindow.location.href === "about:blank") return;
+        setTimeout(() => {
+          document
+            .querySelector(frame.contentWindow.location.hash || null)
+            ?.replaceWith(...frame.contentDocument.body.childNodes);
+          frame.remove();
+          document.body.appendChild(frame);
+        });
+      }
+    </script>
   </body>
 </html>
