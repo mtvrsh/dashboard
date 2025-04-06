@@ -12,8 +12,8 @@
         <span id="hostname">Host: {{ .Hostname }}</span>
         <span id="uptime">Uptime: {{ .Uptime }}</span>
       </div>
-      <form id="commands">{{ range .Commands }}
-        <button class=command name=command value={{ . }}>{{ . }}</button>{{ end }}
+      <form id="commands" method="post" target="htmz">{{ range .Commands }}
+        <button class="command" formaction="command/{{ . }}#command-output">{{ . }}</button>{{ end }}
       </form>
       {{- if .DisksUsage }}
       <table id="disk-usage">
@@ -36,8 +36,8 @@
           </tr>{{end}}
         </tbody>
       </table>{{ end }}
-      {{- if .CommandOutput }}
-      <pre id="command-output">{{ .CommandOutput }}</pre>{{ end }}
+      <pre id="command-output"></pre>
     </div>
+    <iframe hidden name=htmz onload="setTimeout(()=>document.querySelector(contentWindow.location.hash||null)?.replaceWith(...contentDocument.body.childNodes))"></iframe>
   </body>
 </html>

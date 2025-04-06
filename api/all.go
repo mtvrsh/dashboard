@@ -15,8 +15,6 @@ type All struct {
 	DisksUsage map[string]DiskUsage
 	// DirsInUse map[string]bool
 	// Temperatures map[string]int
-
-	CommandOutput string
 }
 
 type DiskUsage struct {

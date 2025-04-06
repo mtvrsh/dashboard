@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"os/exec"
 	"slices"
 	"strings"
@@ -32,7 +31,9 @@ func newServer() server {
 
 func (s *server) serve() error {
 	s.main = template.Must(template.New("index.template").Parse(index))
+
 	http.HandleFunc("GET /", s.mainHandler)
+	http.HandleFunc("POST /command/{command}", s.commandHandler)
 	http.HandleFunc("GET /style.css", s.styleHandler)
 
 	addr := net.JoinHostPort(s.config.Address, fmt.Sprint(s.config.Port))
@@ -48,18 +49,15 @@ func (s *server) mainHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	all.Commands = s.getCommands()
 
-	command := r.FormValue("command")
-	if command != "" {
-		commandOutput := s.execCommand(command)
-		http.Redirect(w, r, "/?output="+url.QueryEscape(commandOutput), http.StatusSeeOther)
-		return
-	}
-	all.CommandOutput = r.FormValue("output")
-
 	err = s.main.Execute(w, all)
 	if err != nil {
 		log.Print(err)
 	}
+}
+func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	cmd := s.execCommand(r.PathValue("command"))
+	fmt.Fprintf(w, "<pre id=command-output>%s</pre>", cmd)
 }
 
 func (s *server) styleHandler(w http.ResponseWriter, _ *http.Request) {
