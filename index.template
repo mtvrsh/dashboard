@@ -38,6 +38,9 @@
       </table>{{ end }}
       <pre id="command-output"></pre>
     </div>
+    <footer>
+      <a href="https://github.com/mtvrsh/dashboard">github.com/mtvrsh/dashboard</a>
+    </footer>
     <iframe hidden name="htmz" onload="window.htmz(this)"></iframe>
     <script>
     function htmz(frame) {

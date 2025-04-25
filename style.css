@@ -83,6 +83,19 @@ pre {
   white-space: pre-wrap;
 }
 
+footer {
+  font-size: small;
+  text-align: center;
+}
+
+a {
+  color: var(--light-bg);
+  text-decoration: none;
+}
+
+a:hover {
+  color: inherit;
+}
 @media (prefers-color-scheme: dark) {
   body {
     background-color: var(--dark-bg);
@@ -102,5 +115,9 @@ pre {
 
   .command:hover {
     background-color: var(--dark-btn);
+  }
+
+  a {
+    color: var(--dark-bg);
   }
 }
