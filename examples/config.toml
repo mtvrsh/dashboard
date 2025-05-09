@@ -12,3 +12,14 @@ date = ["date"]
 rm = ["rm", "/tmp/dashboard"]
 # by default commands are executed wthout shell
 touch = ["sh", "-c", "date > /tmp/dashboard"]
+
+[[exec-always]]
+# cmd = ["doas","examples/is-path-in-use.sh", "/tmp/cliphist"]
+cmd = ["examples/is-path-in-use.sh", "/tmp/cliphist"]
+success = "/tmp/cliphist is in use"
+failure = "/tmp/cliphist is not in use"
+
+[[exec-always]]
+cmd = ["which", "gitea"]
+failure = "Git not found in PATH"
+success = "Git found in PATH"

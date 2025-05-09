@@ -15,6 +15,10 @@
       <form id="commands" method="post" target="htmz">{{ range .Commands }}
         <button class="command" formaction="command/{{ . }}#command-output">{{ . }}</button>{{ end }}
       </form>
+      {{- if .ExecAlways }}
+      <div id="exec-always">
+      {{ range $index := .ExecAlways }}<div><iframe hidden src="exec-always/{{ $index }}" onload="hideLoader(this)"></iframe><div class=loader></div></div>{{- end }}
+      </div>{{ end }}
       {{- if .DisksUsage }}
       <table id="disk-usage">
         <thead>
@@ -32,8 +36,8 @@
             <td>{{ .Size }}</td>
             <td>{{ .Used }}</td>
             <td>{{ .Avail }}</td>
-            <td style={{.UsePercentStyle}}>{{ .UsePercent }}</td>
-          </tr>{{end}}
+            <td style={{ .UsePercentStyle }}>{{ .UsePercent }}</td>
+          </tr>{{ end }}
         </tbody>
       </table>{{ end }}
       <pre id="command-output"></pre>
@@ -41,8 +45,12 @@
     <footer>
       <a href="https://github.com/mtvrsh/dashboard">github.com/mtvrsh/dashboard</a>
     </footer>
-    <iframe hidden name="htmz" onload="window.htmz(this)"></iframe>
     <script>
+    function hideLoader(elem) {
+      p = elem.parentElement;
+      p.removeChild(p.querySelector(".loader"));
+      elem.replaceWith(...elem.contentDocument.body.childNodes);
+    }
     function htmz(frame) {
         if (frame.contentWindow.location.href === "about:blank") return;
         setTimeout(() => {
@@ -54,5 +62,6 @@
         });
       }
     </script>
+    <iframe hidden name="htmz" onload="window.htmz(this)"></iframe>
   </body>
 </html>
