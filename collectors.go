@@ -4,16 +4,41 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"html/template"
+	"math"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
-
-	"github.com/mtvrsh/dashboard/api"
 )
 
-func getSystemInfo(mountpoints []string) (api.All, error) {
-	stats := api.All{}
+type all struct {
+	Hostname   string
+	Uptime     string
+	Commands   []string
+	DisksUsage map[string]diskUsage
+	ExecAlways int
+}
+
+type diskUsage struct {
+	Size       string
+	Used       string
+	UsePercent string
+	Avail      string
+}
+
+func (du diskUsage) UsePercentStyle() template.CSS {
+	p, err := strconv.ParseFloat(strings.TrimSuffix(du.UsePercent, "%"), 64)
+	if err != nil {
+		return ""
+	}
+	red := min(255, int(math.Floor((p/100)*255)))
+	green := 255 - red
+	return template.CSS(fmt.Sprintf("color: rgb(%d, %d, 0)", red, green))
+}
+func getSystemInfo(mountpoints []string) (all, error) {
+	stats := all{}
 
 	du, err := getDisksUsage(mountpoints)
 	if err != nil {
@@ -35,11 +60,11 @@ func getSystemInfo(mountpoints []string) (api.All, error) {
 	return stats, nil
 }
 
-func getDisksUsage(mountpoints []string) (map[string]api.DiskUsage, error) {
-	diskUsage := map[string]api.DiskUsage{}
+func getDisksUsage(mountpoints []string) (map[string]diskUsage, error) {
+	du := map[string]diskUsage{}
 	df, err := exec.Command("df", "-h").Output()
 	if err != nil {
-		return diskUsage, err
+		return du, err
 	}
 
 	scanner := bufio.NewScanner(bytes.NewReader(df))
@@ -47,22 +72,22 @@ func getDisksUsage(mountpoints []string) (map[string]api.DiskUsage, error) {
 		line := scanner.Text()
 		fields := strings.Fields(line)
 		if len(fields) < 6 {
-			return diskUsage, fmt.Errorf("invalid output from df")
+			return du, fmt.Errorf("invalid output from df")
 		}
 		for _, mount := range mountpoints {
 			if mount == fields[5] {
-				du := api.DiskUsage{
+				d := diskUsage{
 					Size:       fields[1],
 					Used:       fields[2],
 					Avail:      fields[3],
 					UsePercent: fields[4],
 				}
-				diskUsage[mount] = du
+				du[mount] = d
 				continue
 			}
 		}
 	}
-	return diskUsage, nil
+	return du, nil
 }
 
 func getSystemUptime() (time.Duration, error) {
@@ -83,7 +108,7 @@ func getSystemUptime() (time.Duration, error) {
 	return uptime, nil
 }
 
-// truncated to 1m, human readable duraton string
+// truncated to 1m, human readable duration string
 func prettyPrintDuration(d time.Duration) string {
 	result := ""
 	if d < 0 {
