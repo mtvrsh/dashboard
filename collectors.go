@@ -83,27 +83,32 @@ func getSystemUptime() (time.Duration, error) {
 	return uptime, nil
 }
 
-// truncated to 1m, human readable duraton string
+// prettyPrintDuration formats a duration as "Xd Yh Zm" truncated to minutes.
 func prettyPrintDuration(d time.Duration) string {
-	result := ""
+	sign := ""
 	if d < 0 {
+		sign = "-"
 		d = d.Abs()
-		result = "-"
 	}
 	totalMinutes := int(d.Minutes())
 
 	days := totalMinutes / (24 * 60)
 	hours := (totalMinutes % (24 * 60)) / 60
-	minutes := (totalMinutes % 60)
+	minutes := totalMinutes % 60
 
+	parts := make([]string, 0, 3)
 	if days > 0 {
-		result += fmt.Sprintf("%dd ", days)
+		parts = append(parts, fmt.Sprintf("%dd", days))
 	}
 	if hours > 0 {
-		result += fmt.Sprintf("%dh ", hours)
+		parts = append(parts, fmt.Sprintf("%dh", hours))
 	}
 	if minutes > 0 {
-		result += fmt.Sprintf("%dm ", minutes)
+		parts = append(parts, fmt.Sprintf("%dm", minutes))
 	}
-	return strings.TrimSuffix(result, " ")
+
+	if len(parts) == 0 {
+		return "0m"
+	}
+	return sign + strings.Join(parts, " ")
 }
