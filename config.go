@@ -7,10 +7,12 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+type commands map[string][]string
+
 type config struct {
 	Address          string
 	Port             uint
-	Commands         map[string][]string
+	Commands         commands
 	WatchMountpoints []string `toml:"watch-mountpoints"`
 }
 
@@ -29,22 +31,27 @@ func (s *server) loadConfig(path string) error {
 }
 
 func (c config) String() string {
-	return fmt.Sprintf("address = %q\nport = %v\ncommands = %v\nwatch-mountpoints = %q\n",
+	return fmt.Sprintf(`address = %q
+port = %d
+commands = %v
+watch-mountpoints = %q
+`,
 		c.Address,
 		c.Port,
-		pprintCommands(c.Commands),
+		c.Commands,
 		c.WatchMountpoints,
 	)
 }
 
-func pprintCommands(cmds map[string][]string) string {
-	if len(cmds) == 0 {
+func (c commands) String() string {
+	if len(c) == 0 {
 		return "[]"
 	}
-	s := "[\n"
-	for k, v := range cmds {
-		s += fmt.Sprintf("  %v = %+q\n", k, v)
+	var b strings.Builder
+	b.WriteString("[\n")
+	for k, v := range c {
+		b.WriteString(fmt.Sprintf("  %v = %+q\n", k, v))
 	}
-	s += "]"
-	return s
+	b.WriteString("]")
+	return b.String()
 }

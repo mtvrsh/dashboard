@@ -14,4 +14,4 @@ Open [http://localhost:8080](http://localhost:8080).
 
 ### Configuration
 
-Take a look at [example configuration file](examples/config.toml).
+Example [configuration file](examples/config.toml).

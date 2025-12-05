@@ -54,6 +54,7 @@ func (s *server) mainHandler(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 	}
 }
+
 func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {
 	cmd := s.execCommand(r.PathValue("command"))
 	fmt.Fprintf(w, "<!DOCTYPE html><pre id=command-output>%s</pre>", cmd)
