@@ -69,7 +69,11 @@ body {
   background-color: var(--light-btn);
 }
 
-th, td {
+th {
+  text-align: left;
+}
+
+td {
   text-align: right;
 }
 

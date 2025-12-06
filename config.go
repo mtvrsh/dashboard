@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/BurntSushi/toml"
 )
@@ -14,6 +15,7 @@ type config struct {
 	Port             uint
 	Commands         commands
 	WatchMountpoints []string `toml:"watch-mountpoints"`
+	CommandTimeout   Duration `toml:"command-timeout"`
 }
 
 func (s *server) loadConfig(path string) error {
@@ -54,4 +56,16 @@ func (c commands) String() string {
 	}
 	b.WriteString("]")
 	return b.String()
+}
+
+type Duration struct{ time.Duration }
+
+func (d *Duration) UnmarshalText(text []byte) error {
+	var err error
+	d.Duration, err = time.ParseDuration(string(text))
+	return err
+}
+
+func (d Duration) MarshalText() ([]byte, error) {
+	return []byte(d.String()), nil
 }
