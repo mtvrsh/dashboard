@@ -15,8 +15,10 @@ import (
 	"time"
 )
 
-const defaultPort = 8080
-const defaultTimeout = 10 * time.Second
+const (
+	defaultPort    = 8080
+	defaultTimeout = 10 * time.Second
+)
 
 //go:embed index.template
 var index string
@@ -50,7 +52,7 @@ func (s *server) serve() error {
 func (s *server) mainHandler(w http.ResponseWriter, r *http.Request) {
 	all, err := getSystemInfo(s.config.WatchMountpoints)
 	if err != nil {
-		log.Printf("collection failed %v", err)
+		log.Printf("failed to get system info: %v", err)
 		http.Error(w, "Failed to collect data", http.StatusInternalServerError)
 		return
 	}

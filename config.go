@@ -8,8 +8,6 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-type commands map[string][]string
-
 type config struct {
 	Address          string
 	Port             uint
@@ -18,16 +16,16 @@ type config struct {
 	CommandTimeout   Duration `toml:"command-timeout"`
 }
 
-func (s *server) loadConfig(path string) error {
-	meta, err := toml.DecodeFile(path, &s.config)
+func (c *config) loadConfig(path string) error {
+	meta, err := toml.DecodeFile(path, &c)
 	if err != nil {
-		return fmt.Errorf("decoding: %w", err)
+		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
 	undecoded := meta.Undecoded()
 	if len(undecoded) != 0 {
-		pretty := strings.Trim(fmt.Sprintf("%q", undecoded), "[]")
-		return fmt.Errorf("unknown fields: %v", pretty)
+		keys := strings.Trim(fmt.Sprintf("%q", undecoded), "[]")
+		return fmt.Errorf("unknown config keys: %v", keys)
 	}
 	return nil
 }
@@ -36,14 +34,15 @@ func (c config) String() string {
 	return fmt.Sprintf(`address = %q
 port = %d
 commands = %v
-watch-mountpoints = %q
-`,
+watch-mountpoints = %q`,
 		c.Address,
 		c.Port,
 		c.Commands,
 		c.WatchMountpoints,
 	)
 }
+
+type commands map[string][]string
 
 func (c commands) String() string {
 	if len(c) == 0 {

@@ -17,8 +17,8 @@ func main() {
 	flag.Parse()
 
 	dashboard := newServer()
-	if err := dashboard.loadConfig(*configPath); err != nil {
-		log.Print("config: ", err)
+	if err := dashboard.config.loadConfig(*configPath); err != nil {
+		log.Print(err)
 	}
 
 	if *port > 0 {
@@ -26,7 +26,7 @@ func main() {
 	}
 
 	if *showConfig {
-		fmt.Print(dashboard.config)
+		fmt.Println(dashboard.config)
 		os.Exit(0)
 	}
 
