@@ -17,7 +17,7 @@ type config struct {
 }
 
 func (c *config) loadConfig(path string) error {
-	meta, err := toml.DecodeFile(path, &c)
+	meta, err := toml.DecodeFile(path, c)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}

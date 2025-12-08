@@ -38,6 +38,11 @@ func newServer() server {
 	}}
 }
 
+func newServerFromConfig(path string) (server, error) {
+	s := newServer()
+	return s, s.config.loadConfig(path)
+}
+
 func (s *server) serve() error {
 	s.main = template.Must(template.New("index.template").Parse(index))
 

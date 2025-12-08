@@ -16,8 +16,8 @@ func main() {
 
 	flag.Parse()
 
-	dashboard := newServer()
-	if err := dashboard.config.loadConfig(*configPath); err != nil {
+	dashboard, err := newServerFromConfig(*configPath)
+	if err != nil {
 		log.Print(err)
 	}
 
@@ -30,6 +30,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	err := dashboard.serve()
+	err = dashboard.serve()
 	log.Fatal("server: ", err)
 }
