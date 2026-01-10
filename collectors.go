@@ -3,41 +3,50 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/mtvrsh/dashboard/api"
 )
 
-func getSystemInfo(mountpoints []string) (api.All, error) {
+func getAll(mountpoints, fuserCmd, dirsToWatch []string) (api.All, error) {
 	stats := api.All{}
+	errs := []error{}
+	var err error
 
-	du, err := getDisksUsage(mountpoints)
+	stats.DisksUsage, err = getDisksUsage(mountpoints)
 	if err != nil {
-		return stats, fmt.Errorf("disk usage: %w", err)
+		errs = append(errs, fmt.Errorf("disk usage: %w", err))
 	}
-	stats.DisksUsage = du
 
 	stats.Hostname, err = os.Hostname()
 	if err != nil {
-		return stats, fmt.Errorf("hostname: %w", err)
+		errs = append(errs, fmt.Errorf("hostname: %w", err))
 	}
 
 	uptime, err := getSystemUptime()
 	if err != nil {
-		return stats, fmt.Errorf("system uptime: %w", err)
+		errs = append(errs, fmt.Errorf("system uptime: %w", err))
 	}
 	stats.Uptime = prettyPrintDuration(uptime)
 
-	return stats, nil
+	stats.MountsUsers, err = getMountpointsUsers(fuserCmd, dirsToWatch)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("mountpoint users: %w", err))
+	}
+
+	return stats, errors.Join(errs...)
 }
 
 func getDisksUsage(mountpoints []string) (map[string]api.DiskUsage, error) {
-	diskUsage := map[string]api.DiskUsage{}
-	df, err := exec.Command("df", "-h").Output()
+	diskUsage := make(map[string]api.DiskUsage, len(mountpoints))
+
+	df, err := exec.Command("df", "-h").CombinedOutput()
 	if err != nil {
 		return diskUsage, err
 	}
@@ -51,17 +60,25 @@ func getDisksUsage(mountpoints []string) (map[string]api.DiskUsage, error) {
 		}
 		for _, mount := range mountpoints {
 			if mount == fields[5] {
-				du := api.DiskUsage{
+				diskUsage[mount] = api.DiskUsage{
 					Size:       fields[1],
 					Used:       fields[2],
 					Avail:      fields[3],
 					UsePercent: fields[4],
 				}
-				diskUsage[mount] = du
-				continue
+				break
 			}
 		}
+		// exit early when we found everything
+		if len(diskUsage) == len(mountpoints) {
+			break
+		}
 	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("scanner error during reading df output: %w", err)
+	}
+
 	return diskUsage, nil
 }
 
@@ -72,7 +89,7 @@ func getSystemUptime() (time.Duration, error) {
 	}
 
 	fields := strings.Fields(string(data))
-	if len(fields) < 1 {
+	if len(fields) == 0 {
 		return 0, fmt.Errorf("got %d fields instead of 2", len(fields))
 	}
 
@@ -111,4 +128,50 @@ func prettyPrintDuration(d time.Duration) string {
 		return "0m"
 	}
 	return sign + strings.Join(parts, " ")
+}
+
+func getMountpointsUsers(cmd, paths []string) (map[string][]string, error) {
+	mountUsers := make(map[string][]string, len(paths))
+
+	if len(paths) == 0 {
+		return mountUsers, nil
+	}
+
+	args := append(cmd[1:], "-mv")
+	args = append(args, paths...)
+
+	output, err := exec.Command(cmd[0], args...).CombinedOutput()
+	// fmt.Println(string(output))
+	if err != nil {
+		return mountUsers, err
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(output))
+
+	// Skip header
+	if !scanner.Scan() {
+		return nil, fmt.Errorf("output too short")
+	}
+
+	currentMount := ""
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Fields(line)
+
+		// len = 1 is when output is wrapped because of too long mount path
+		if (len(fields) == 5 || len(fields) == 1) && strings.HasSuffix(fields[0], ":") {
+			currentMount = strings.TrimSuffix(fields[0], ":")
+			mountUsers[currentMount] = []string{}
+			// fmt.Println("current mount set to ", currentMount)
+		} else if len(fields) == 4 {
+			if !slices.Contains(mountUsers[currentMount], fields[0]) {
+				mountUsers[currentMount] = append(mountUsers[currentMount], fields[0])
+				// fmt.Println("appending", fields[0])
+			}
+		}
+	}
+
+	// fmt.Printf("%+v\n", mountUsers)
+	// fmt.Println("len=", len(mountUsers))
+	return mountUsers, nil
 }

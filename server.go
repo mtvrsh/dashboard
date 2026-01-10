@@ -16,8 +16,10 @@ import (
 )
 
 const (
-	defaultPort    = 8080
-	defaultTimeout = 10 * time.Second
+	defaultAddress  = "127.0.0.1"
+	defaultPort     = 8080
+	defaultTimeout  = 10 * time.Second
+	defaultFuserCmd = "fuser"
 )
 
 //go:embed index.template
@@ -33,8 +35,10 @@ type server struct {
 
 func newServer() server {
 	return server{config: config{
+		Address:        defaultAddress,
 		Port:           defaultPort,
 		CommandTimeout: Duration{Duration: defaultTimeout},
+		FuserCommand:   []string{defaultFuserCmd},
 	}}
 }
 
@@ -55,11 +59,10 @@ func (s *server) serve() error {
 }
 
 func (s *server) mainHandler(w http.ResponseWriter, r *http.Request) {
-	all, err := getSystemInfo(s.config.WatchMountpoints)
+	all, err := getAll(s.config.DiskUsageMountpoints, s.config.FuserCommand, s.config.MountpointUsers)
 	if err != nil {
 		log.Printf("failed to get system info: %v", err)
-		http.Error(w, "Failed to collect data", http.StatusInternalServerError)
-		return
+		// http.Error(w, "Failed to collect data", http.StatusInternalServerError)
 	}
 	all.Commands = s.getCommands()
 

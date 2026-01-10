@@ -4,7 +4,14 @@
 # port = 8080
 
 # mountpoints for which disk usage is displayed
-watch-mountpoints = ["/"]
+# requires df in path
+# disk-usage = []
+disk-usage = ["/"]
+
+# use fuser to check if any proces is currently using this mountpoint
+# fuser-cmd = ["fuser"]
+# mount-users = []
+mount-users = ["/tmp", "/dev/shm", "/var/log", "/proc", "/sys"]
 
 # command-timeout = "10s"
 

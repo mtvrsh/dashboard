@@ -9,11 +9,11 @@ import (
 )
 
 type All struct {
-	Hostname   string
-	Uptime     string
-	Commands   []string
-	DisksUsage map[string]DiskUsage
-	// DirsInUse map[string]bool
+	Hostname    string
+	Uptime      string
+	Commands    []string
+	DisksUsage  map[string]DiskUsage
+	MountsUsers map[string][]string
 	// Temperatures map[string]int
 }
 

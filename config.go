@@ -9,11 +9,13 @@ import (
 )
 
 type config struct {
-	Address          string
-	Port             uint
-	Commands         commands
-	WatchMountpoints []string `toml:"watch-mountpoints"`
-	CommandTimeout   Duration `toml:"command-timeout"`
+	Address              string
+	Port                 uint
+	Commands             commands
+	CommandTimeout       Duration `toml:"command-timeout"`
+	DiskUsageMountpoints []string `toml:"disk-usage"`
+	FuserCommand         []string `toml:"fuser-cmd"`
+	MountpointUsers      []string `toml:"mount-users"`
 }
 
 func (c *config) loadConfig(path string) error {
@@ -34,11 +36,17 @@ func (c config) String() string {
 	return fmt.Sprintf(`address = %q
 port = %d
 commands = %v
-watch-mountpoints = %q`,
+command-timeout = %v
+disk-usage = %q
+fuser-cmd = %q
+mount-users = %q`,
 		c.Address,
 		c.Port,
 		c.Commands,
-		c.WatchMountpoints,
+		c.CommandTimeout,
+		c.DiskUsageMountpoints,
+		c.FuserCommand,
+		c.MountpointUsers,
 	)
 }
 
@@ -51,7 +59,7 @@ func (c commands) String() string {
 	var b strings.Builder
 	b.WriteString("[\n")
 	for k, v := range c {
-		b.WriteString(fmt.Sprintf("  %v = %+q\n", k, v))
+		fmt.Fprintf(&b, "  %v = %+q\n", k, v)
 	}
 	b.WriteString("]")
 	return b.String()
