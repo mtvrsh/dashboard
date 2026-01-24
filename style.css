@@ -83,7 +83,7 @@ th:first-child, td:first-child {
   white-space: pre;
 }
 
-.mount-avtivity {
+.mount-activity {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

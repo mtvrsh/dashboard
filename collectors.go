@@ -14,8 +14,8 @@ import (
 	"github.com/mtvrsh/dashboard/api"
 )
 
-func getAll(mountpoints, fuserCmd, dirsToWatch []string) (api.All, error) {
-	stats := api.All{}
+func getSystemInfo(mountpoints, fuserCmd, dirsToWatch []string) (api.SystemInfo, error) {
+	stats := api.SystemInfo{}
 	errs := []error{}
 	var err error
 
@@ -35,7 +35,7 @@ func getAll(mountpoints, fuserCmd, dirsToWatch []string) (api.All, error) {
 	}
 	stats.Uptime = prettyPrintDuration(uptime)
 
-	stats.MountsUsers, err = getMountpointsUsers(fuserCmd, dirsToWatch)
+	stats.MountpointsUsers, err = getMountpointsUsers(fuserCmd, dirsToWatch)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("mountpoint users: %w", err))
 	}

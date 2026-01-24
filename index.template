@@ -36,9 +36,9 @@
           </tr>{{end}}
         </tbody>
       </table>{{ end }}
-      {{- if .MountsUsers}}
-      <div class="mount-avtivity">
-          {{- range $key, $value := .MountsUsers}}
+      {{- if .MountpointsUsers}}
+      <div class="mount-activity">
+          {{- range $key, $value := .MountpointsUsers}}
           <div class="mount-entry" title="{{if gt (len $value) 0 }}In use{{ else }}Idle{{ end }}">
             <span>{{ $key }}</span>
             <div class="mount-status mount-{{if gt (len $value) 0 }}busy{{ else }}idle{{ end }}"></div>

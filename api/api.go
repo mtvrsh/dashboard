@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-type All struct {
-	Hostname    string
-	Uptime      string
-	Commands    []string
-	DisksUsage  map[string]DiskUsage
-	MountsUsers map[string][]string
+type SystemInfo struct {
+	Hostname         string
+	Uptime           string
+	Commands         []string
+	DisksUsage       map[string]DiskUsage
+	MountpointsUsers map[string][]string
 	// Temperatures map[string]int
 }
 

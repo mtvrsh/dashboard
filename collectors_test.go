@@ -34,7 +34,7 @@ func Test_prettyPrintDuration(t *testing.T) {
 	}
 }
 
-func Test_getMountpointUsers(t *testing.T) {
+func Test_getMountpointsUsers(t *testing.T) {
 	currentUser, _ := user.Current()
 
 	tests := []struct {
@@ -70,7 +70,7 @@ func Test_getMountpointUsers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotErr := getMountpointsUsers([]string{defaultFuserCmd}, tt.paths)
+			got, gotErr := getMountpointsUsers(defaultFuserCmd, tt.paths)
 			if gotErr != nil {
 				if !tt.wantErr {
 					t.Errorf("getMountpointUsers() failed: %v", gotErr)
