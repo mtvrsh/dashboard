@@ -22,3 +22,4 @@ rm = ["rm", "/tmp/dashboard"]
 # by default commands are executed wthout shell
 touch = ["sh", "-c", "date > /tmp/dashboard"]
 sleep = ["sh", "-c", "while true; do sleep 1s; echo ok; done"]
+test-xss = ["echo", "<script>alert('XSS')</script>"]

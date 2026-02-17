@@ -141,7 +141,6 @@ func getMountpointsUsers(cmd, paths []string) (map[string][]string, error) {
 	args = append(args, paths...)
 
 	output, err := exec.Command(cmd[0], args...).CombinedOutput()
-	// fmt.Println(string(output))
 	if err != nil {
 		return mountUsers, err
 	}
@@ -158,20 +157,15 @@ func getMountpointsUsers(cmd, paths []string) (map[string][]string, error) {
 		line := scanner.Text()
 		fields := strings.Fields(line)
 
-		// len = 1 is when output is wrapped because of too long mount path
 		if (len(fields) == 5 || len(fields) == 1) && strings.HasSuffix(fields[0], ":") {
 			currentMount = strings.TrimSuffix(fields[0], ":")
 			mountUsers[currentMount] = []string{}
-			// fmt.Println("current mount set to ", currentMount)
 		} else if len(fields) == 4 {
 			if !slices.Contains(mountUsers[currentMount], fields[0]) {
 				mountUsers[currentMount] = append(mountUsers[currentMount], fields[0])
-				// fmt.Println("appending", fields[0])
 			}
 		}
 	}
 
-	// fmt.Printf("%+v\n", mountUsers)
-	// fmt.Println("len=", len(mountUsers))
 	return mountUsers, nil
 }

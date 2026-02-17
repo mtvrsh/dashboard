@@ -26,8 +26,11 @@ func (c *config) loadConfig(path string) error {
 
 	undecoded := meta.Undecoded()
 	if len(undecoded) != 0 {
-		keys := strings.Trim(fmt.Sprintf("%q", undecoded), "[]")
-		return fmt.Errorf("unknown config keys: %v", keys)
+		keys := make([]string, len(undecoded))
+		for i, k := range undecoded {
+			keys[i] = k.String()
+		}
+		return fmt.Errorf("unknown config keys: %s", strings.Join(keys, ", "))
 	}
 	return nil
 }

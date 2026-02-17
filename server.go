@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"html"
 	"html/template"
 	"log"
 	"net"
@@ -63,7 +64,6 @@ func (s *server) mainHandler(w http.ResponseWriter, r *http.Request) {
 	info, err := getSystemInfo(s.config.DiskUsageMountpoints, s.config.FuserCommand, s.config.MountpointUsers)
 	if err != nil {
 		log.Printf("failed to get system info: %v", err)
-		// http.Error(w, "Failed to collect data", http.StatusInternalServerError)
 	}
 	info.Commands = s.getCommands()
 
@@ -78,7 +78,7 @@ func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("client %q requested execution of command %q", r.RemoteAddr, command)
 	output := s.execCommand(command)
 
-	fmt.Fprintf(w, "<!DOCTYPE html><pre id=command-output>%s</pre>", output)
+	fmt.Fprintf(w, "<!DOCTYPE html><pre id=command-output>%s</pre>", html.EscapeString(output))
 }
 
 func (s *server) styleHandler(w http.ResponseWriter, _ *http.Request) {
@@ -116,7 +116,7 @@ func (s *server) execCommand(command string) string {
 	if err != nil {
 		log.Printf("command %q failed: %s; output: %q", cmdStr, err, truncate(output, 80, "[truncated]"))
 
-		if ctx.Err() != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		if errors.Is(err, context.DeadlineExceeded) {
 			log.Printf("%q exceeded deadline (%v)\n", command, s.config.CommandTimeout)
 		}
 	}

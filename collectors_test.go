@@ -86,3 +86,54 @@ func Test_getMountpointsUsers(t *testing.T) {
 		})
 	}
 }
+
+func Test_execCommandTimeout(t *testing.T) {
+	tests := []struct {
+		name         string
+		command      string
+		timeout      time.Duration
+		wantContains string
+		WantErrLog   bool
+	}{
+		{
+			name:         "command times out",
+			command:      "sleep",
+			timeout:      50 * time.Millisecond,
+			wantContains: "sleep 5",
+			WantErrLog:   true,
+		},
+		{
+			name:         "command succeeds",
+			command:      "echo",
+			timeout:      time.Second,
+			wantContains: "hello",
+			WantErrLog:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := server{
+				config: config{
+					Commands: map[string][]string{
+						tt.command: {tt.command, "hello"},
+						"sleep":    {"sleep", "5"},
+					},
+					CommandTimeout: Duration{Duration: tt.timeout},
+				},
+			}
+
+			output := s.execCommand(tt.command)
+
+			if tt.WantErrLog {
+				if output == "" {
+					t.Error("expected non-empty output for timed out command")
+				}
+			} else {
+				if output == "" {
+					t.Error("expected non-empty output for successful command")
+				}
+			}
+		})
+	}
+}
