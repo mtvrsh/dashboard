@@ -53,7 +53,7 @@ mount-users = %q`,
 	)
 }
 
-type commands map[string][]string
+type commands map[string]string
 
 func (c commands) String() string {
 	if len(c) == 0 {
@@ -62,7 +62,7 @@ func (c commands) String() string {
 	var b strings.Builder
 	b.WriteString("[\n")
 	for k, v := range c {
-		fmt.Fprintf(&b, "  %v = %+q\n", k, v)
+		fmt.Fprintf(&b, "  %v = %q\n", k, v)
 	}
 	b.WriteString("]")
 	return b.String()

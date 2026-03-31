@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os/exec"
 	"slices"
-	"strings"
 	"time"
 )
 
@@ -100,8 +99,8 @@ func (s *server) getCommands() []string {
 }
 
 func (s *server) execCommand(command string) string {
-	cmdFromPath := s.config.Commands[command]
-	if len(cmdFromPath) == 0 {
+	cmdStr := s.config.Commands[command]
+	if len(cmdStr) == 0 {
 		log.Printf("command not declared: %q", command)
 		return ""
 	}
@@ -109,15 +108,14 @@ func (s *server) execCommand(command string) string {
 	ctx, cancel := context.WithTimeout(context.Background(), s.config.CommandTimeout.Duration)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, cmdFromPath[0], cmdFromPath[1:]...)
-	cmdStr := strings.Join(cmd.Args, " ")
+	cmd := exec.CommandContext(ctx, "sh", "-c", cmdStr)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("command %q failed: %s; output: %q", cmdStr, err, truncate(output, 80, "[truncated]"))
+		log.Printf("command %q=%q failed: %s; output: %q", command, cmd.Args, err, truncate(output, 80, "[truncated]"))
 
 		if errors.Is(err, context.DeadlineExceeded) {
-			log.Printf("%q exceeded deadline (%v)\n", command, s.config.CommandTimeout)
+			log.Printf("command %q=%q exceeded deadline (%v)", command, cmd.Args, s.config.CommandTimeout)
 		}
 	}
 

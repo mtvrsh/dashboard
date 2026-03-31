@@ -12,7 +12,7 @@ func main() {
 
 	port := flag.Uint("port", 0, fmt.Sprintf("port `number` (default %d)", defaultPort))
 	configPath := flag.String("config", "config.toml", "config `path`")
-	showConfig := flag.Bool("v", false, "display current configuration")
+	showConfig := flag.Bool("dump", false, "display current configuration")
 
 	flag.Parse()
 

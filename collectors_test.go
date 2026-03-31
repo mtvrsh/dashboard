@@ -3,6 +3,7 @@ package main
 import (
 	"os/user"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -89,50 +90,49 @@ func Test_getMountpointsUsers(t *testing.T) {
 
 func Test_execCommandTimeout(t *testing.T) {
 	tests := []struct {
-		name         string
-		command      string
-		timeout      time.Duration
-		wantContains string
-		WantErrLog   bool
+		testName    string
+		commandName string
+		command     string
+		willTimeout time.Duration
+		output      string
 	}{
 		{
-			name:         "command times out",
-			command:      "sleep",
-			timeout:      50 * time.Millisecond,
-			wantContains: "sleep 5",
-			WantErrLog:   true,
+			testName:    "command times out",
+			commandName: "sleep",
+			command:     "sleep 5",
+			willTimeout: 50 * time.Millisecond,
+			output:      "",
 		},
 		{
-			name:         "command succeeds",
-			command:      "echo",
-			timeout:      time.Second,
-			wantContains: "hello",
-			WantErrLog:   false,
+			testName:    "command succeeds",
+			commandName: "echo",
+			command:     "echo hello",
+			willTimeout: time.Second,
+			output:      "hello\n",
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.testName, func(t *testing.T) {
 			s := server{
 				config: config{
-					Commands: map[string][]string{
-						tt.command: {tt.command, "hello"},
-						"sleep":    {"sleep", "5"},
+					Commands: map[string]string{
+						tt.commandName: tt.command,
 					},
-					CommandTimeout: Duration{Duration: tt.timeout},
+					CommandTimeout: Duration{Duration: tt.willTimeout},
 				},
 			}
 
-			output := s.execCommand(tt.command)
+			output := s.execCommand(tt.commandName)
 
-			if tt.WantErrLog {
-				if output == "" {
-					t.Error("expected non-empty output for timed out command")
-				}
-			} else {
-				if output == "" {
-					t.Error("expected non-empty output for successful command")
-				}
+			lines := strings.SplitN(output, "\n", 2)
+			if len(lines) < 2 {
+				t.Fatalf("expected output with prefix line, got %q", output)
+			}
+			actualOutput := lines[1]
+
+			if actualOutput != tt.output {
+				t.Errorf("expected output %q, got %q", tt.output, actualOutput)
 			}
 		})
 	}
