@@ -65,6 +65,7 @@ func (s *server) mainHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("failed to get system info: %v", err)
 	}
 	info.Commands = s.getCommands()
+	info.CommandTimeoutMs = s.config.CommandTimeout.Milliseconds()
 
 	err = s.main.Execute(w, info)
 	if err != nil {

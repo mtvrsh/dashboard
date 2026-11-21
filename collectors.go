@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,7 +20,7 @@ func getSystemInfo(mountpoints, fuserCmd, dirsToWatch []string) (api.SystemInfo,
 	errs := []error{}
 	var err error
 
-	stats.DisksUsage, err = getDisksUsage(mountpoints)
+	disksUsage, err := getDisksUsage(mountpoints)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("disk usage: %w", err))
 	}
@@ -35,21 +36,28 @@ func getSystemInfo(mountpoints, fuserCmd, dirsToWatch []string) (api.SystemInfo,
 	}
 	stats.Uptime = prettyPrintDuration(uptime)
 
-	stats.MountpointsUsers, err = getMountpointsUsers(fuserCmd, dirsToWatch)
+	mountUsers, err := getMountpointsUsers(fuserCmd, dirsToWatch)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("mountpoint users: %w", err))
 	}
+	stats.Mounts = buildMounts(disksUsage, mountUsers)
 
 	return stats, errors.Join(errs...)
 }
 
 func getDisksUsage(mountpoints []string) (map[string]api.DiskUsage, error) {
-	diskUsage := make(map[string]api.DiskUsage, len(mountpoints))
-
-	df, err := exec.Command("df", "-h").CombinedOutput()
+	// -P keeps one filesystem per line, -B1 gives exact byte counts so all
+	// values can be normalized to the same unit by parseDiskUsage.
+	df, err := exec.Command("df", "-PB1").CombinedOutput()
 	if err != nil {
-		return diskUsage, err
+		return nil, err
 	}
+	return parseDiskUsage(df, mountpoints)
+}
+
+// parseDiskUsage parses `df -PB1` output, keeping only the requested mountpoints.
+func parseDiskUsage(df []byte, mountpoints []string) (map[string]api.DiskUsage, error) {
+	diskUsage := make(map[string]api.DiskUsage, len(mountpoints))
 
 	scanner := bufio.NewScanner(bytes.NewReader(df))
 	for scanner.Scan() {
@@ -59,15 +67,27 @@ func getDisksUsage(mountpoints []string) (map[string]api.DiskUsage, error) {
 			return diskUsage, fmt.Errorf("invalid output from df")
 		}
 		for _, mount := range mountpoints {
-			if mount == fields[5] {
-				diskUsage[mount] = api.DiskUsage{
-					Size:       fields[1],
-					Used:       fields[2],
-					Avail:      fields[3],
-					UsePercent: fields[4],
-				}
-				break
+			if mount != fields[5] {
+				continue
 			}
+			size, err := strconv.ParseInt(fields[1], 10, 64)
+			if err != nil {
+				return diskUsage, fmt.Errorf("parsing size for %q: %w", mount, err)
+			}
+			used, err := strconv.ParseInt(fields[2], 10, 64)
+			if err != nil {
+				return diskUsage, fmt.Errorf("parsing used for %q: %w", mount, err)
+			}
+			avail, err := strconv.ParseInt(fields[3], 10, 64)
+			if err != nil {
+				return diskUsage, fmt.Errorf("parsing avail for %q: %w", mount, err)
+			}
+			percent, err := strconv.ParseFloat(strings.TrimSuffix(fields[4], "%"), 64)
+			if err != nil {
+				return diskUsage, fmt.Errorf("parsing use percent for %q: %w", mount, err)
+			}
+			diskUsage[mount] = api.NewDiskUsage(size, used, avail, percent)
+			break
 		}
 		// exit early when we found everything
 		if len(diskUsage) == len(mountpoints) {
@@ -160,7 +180,8 @@ func getMountpointsUsers(cmd, paths []string) (map[string][]string, error) {
 		if (len(fields) == 5 || len(fields) == 1) && strings.HasSuffix(fields[0], ":") {
 			currentMount = strings.TrimSuffix(fields[0], ":")
 			mountUsers[currentMount] = []string{}
-		} else if len(fields) == 4 {
+			// ignore lines before any mount header is seen
+		} else if len(fields) == 4 && currentMount != "" {
 			if !slices.Contains(mountUsers[currentMount], fields[0]) {
 				mountUsers[currentMount] = append(mountUsers[currentMount], fields[0])
 			}
@@ -168,4 +189,37 @@ func getMountpointsUsers(cmd, paths []string) (map[string][]string, error) {
 	}
 
 	return mountUsers, nil
+}
+
+// buildMounts merges mount names from disk usage and mountpoint users into a
+// stable, alphabetically sorted list. Mounts without an entry in mountUsers
+// are flagged as having no user data so they aren't reported as idle.
+func buildMounts(disksUsage map[string]api.DiskUsage, mountUsers map[string][]string) []api.Mount {
+	names := make([]string, 0, len(disksUsage)+len(mountUsers))
+	for name := range disksUsage {
+		names = append(names, name)
+	}
+	for name := range mountUsers {
+		if _, ok := disksUsage[name]; !ok {
+			names = append(names, name)
+		}
+	}
+	slices.Sort(names)
+
+	mounts := make([]api.Mount, 0, len(names))
+	for _, name := range names {
+		var disk *api.DiskUsage
+		if usage, ok := disksUsage[name]; ok {
+			disk = &usage
+		}
+		users, hasUserData := mountUsers[name]
+		mounts = append(mounts, api.Mount{
+			Name:        name,
+			Users:       len(users),
+			UserNames:   users,
+			HasUserData: hasUserData,
+			Disk:        disk,
+		})
+	}
+	return mounts
 }

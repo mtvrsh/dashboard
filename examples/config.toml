@@ -8,7 +8,7 @@
 # disk-usage = []
 disk-usage = ["/"]
 
-# use fuser to check if any proces is currently using this mountpoint
+# use fuser to check if any process is currently using this mountpoint
 # fuser-cmd = ["fuser"]
 # mount-users = []
 mount-users = ["/tmp", "/dev/shm", "/var/log", "/proc", "/sys"]

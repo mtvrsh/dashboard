@@ -7,51 +7,118 @@
     <link rel="stylesheet" href="/style.css">
   </head>
   <body>
-    <div id="main">
-      <div id="header">
-        <span id="hostname">Host: {{ .Hostname }}</span>
-        <span id="uptime">Uptime: {{ .Uptime }}</span>
-      </div>
-      <form id="commands" method="post" target="htmz">{{ range .Commands }}
-        <button class="command" formaction="/command/{{ . }}#command-output">{{ . }}</button>{{ end }}
-      </form>
-      {{- if .DisksUsage }}
-      <table id="disk-usage">
-        <thead>
-          <tr>
-            <th>Mounted on</th>
-            <th>Size</th>
-            <th>Used</th>
-            <th>Avail</th>
-            <th>Use%</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{ range $key, $value := .DisksUsage }}<tr>
-            <td>{{ $key }}</td>
-            <td>{{ .Size }}</td>
-            <td>{{ .Used }}</td>
-            <td>{{ .Avail }}</td>
-            <td style={{.UsePercentStyle}}>{{ .UsePercent }}</td>
-          </tr>{{end}}
-        </tbody>
-      </table>{{ end }}
-      {{- if .MountpointsUsers}}
-      <div class="mount-activity">
-          {{- range $key, $value := .MountpointsUsers}}
-          <div class="mount-entry" title="{{if gt (len $value) 0 }}In use{{ else }}Idle{{ end }}">
-            <span>{{ $key }}</span>
-            <div class="mount-status mount-{{if gt (len $value) 0 }}busy{{ else }}idle{{ end }}"></div>
-          </div>
-          {{- end}}
-      </div>
-      {{- end}}
-      <pre id="command-output"></pre>
-    </div>
-    <footer>
-      <a href="https://github.com/mtvrsh/dashboard">github.com/mtvrsh/dashboard</a>
-    </footer>
+    <main id="main">
+      <header id="summary">
+        <div class="summary-item">
+          <span class="eyebrow">Host</span>
+          <strong id="hostname">{{ .Hostname }}</strong>
+        </div>
+        <div class="summary-item summary-item--right">
+          <span class="eyebrow">Uptime</span>
+          <strong id="uptime">{{ .Uptime }}</strong>
+        </div>
+      </header>
+
+      {{- if .Mounts }}
+      <section id="storage" aria-labelledby="storage-title">
+        <h2 id="storage-title" class="section-title">Storage</h2>
+        <ul class="mount-grid">
+          {{- range .Mounts }}
+          <li class="mount">
+            <div class="mount-top">
+              <span class="mount-name">{{ .Name }}</span>
+              {{- if .HasUserData }}
+              <span class="status-chip {{ if gt .Users 0 }}is-busy{{ else }}is-idle{{ end }}" title="{{ if .UserNames }}In use by: {{ range $i, $name := .UserNames }}{{ if $i }}, {{ end }}{{ $name }}{{ end }}{{ else }}Idle{{ end }}">
+                {{- if gt .Users 0 }}{{ .Users }} {{ if eq .Users 1 }}user{{ else }}users{{ end }}{{ else }}Idle{{ end -}}
+              </span>
+              {{- end }}
+            </div>
+            {{- if .Disk }}
+            <div class="usage usage--{{ .Disk.UsageLevel }}">
+              <div class="bar" role="progressbar" aria-label="Usage for {{ .Name }}"
+                   aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ .Disk.UsePercent }}">
+                <span class="bar-fill" style="{{ .Disk.BarStyle }}"></span>
+              </div>
+              <div class="usage-row">
+                <span class="usage-detail">{{ .Disk.UsedLabel }} of {{ .Disk.SizeLabel }}</span>
+                <strong class="usage-pct">{{ .Disk.PctLabel }}</strong>
+              </div>
+              <p class="usage-free">{{ .Disk.AvailLabel }} free</p>
+            </div>
+            {{- else }}
+            <p class="mount-empty">No usage data</p>
+            {{- end }}
+          </li>
+          {{- end }}
+        </ul>
+      </section>
+      {{- end }}
+
+      {{- if .Commands }}
+      <section id="actions" aria-label="Commands">
+        <form id="commands" method="post" target="htmz" data-timeout-ms="{{ .CommandTimeoutMs }}">
+          {{- range .Commands }}
+          <button class="command" type="submit" formaction="/command/{{ . }}#command-output"><span class="command-label">{{ . }}</span></button>
+          {{- end }}
+        </form>
+      </section>
+      {{- end }}
+
+      <section id="output-panel" aria-label="Command output">
+        <pre id="command-output" aria-live="polite"></pre>
+      </section>
+    </main>
     <script>
+    const commandForm = document.getElementById("commands");
+    const commandButtons = commandForm
+      ? Array.from(commandForm.querySelectorAll(".command"))
+      : [];
+    let pendingTimer = null;
+    let showTimer = null;
+    let pendingButton = null;
+
+    function clearPending() {
+      if (pendingTimer !== null) {
+        clearTimeout(pendingTimer);
+        pendingTimer = null;
+      }
+      if (showTimer !== null) {
+        clearTimeout(showTimer);
+        showTimer = null;
+      }
+      for (const button of commandButtons) {
+        button.disabled = false;
+        button.classList.remove("is-pending");
+        button.removeAttribute("aria-busy");
+      }
+      pendingButton = null;
+    }
+
+    commandForm?.addEventListener("submit", (event) => {
+      // A single iframe handles all responses, so prevent a second command
+      // from hijacking it while one is in flight.
+      for (const button of commandButtons) {
+        button.disabled = true;
+      }
+      pendingButton = event.submitter instanceof HTMLButtonElement
+        ? event.submitter
+        : null;
+      if (pendingTimer !== null) clearTimeout(pendingTimer);
+      if (showTimer !== null) clearTimeout(showTimer);
+      // Only show the spinner for commands that are slow enough to need it.
+      showTimer = setTimeout(() => {
+        showTimer = null;
+        if (pendingButton) {
+          pendingButton.classList.add("is-pending");
+          pendingButton.setAttribute("aria-busy", "true");
+        }
+      }, 300);
+      // If no response arrives, reset the UI after the configured command
+      // timeout plus a small allowance for the round trip.
+      const timeoutMs = Number(commandForm.dataset.timeoutMs || 10000) + 2000;
+      pendingTimer = setTimeout(clearPending, timeoutMs);
+    });
+
     function htmz(frame) {
         if (frame.contentWindow.location.href === "about:blank") return;
         setTimeout(() => {
@@ -60,6 +127,7 @@
             ?.replaceWith(...frame.contentDocument.body.childNodes);
           frame.remove();
           document.body.appendChild(frame);
+          clearPending();
         });
       }
     </script>

@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "servers": {
+      "firefox-devtools": {
+        "type": "local",
+        "command": [
+          "npx",
+          "@mozilla/firefox-devtools-mcp",
+          "--tool-preset",
+          "developer"
+        ]
+      }
+    }
+  }
+}
