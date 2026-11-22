@@ -39,16 +39,28 @@ type DiskUsage struct {
 	UsePercent float64
 }
 
-const bytesPerGiB = 1024 * 1024 * 1024
+// BytesPerGiB is the byte count used for all disk size labels.
+const BytesPerGiB = 1024 * 1024 * 1024
 
 // NewDiskUsage converts raw byte counts from df into GiB.
 func NewDiskUsage(size, used, avail int64, usePercent float64) DiskUsage {
 	return DiskUsage{
-		Size:       float64(size) / bytesPerGiB,
-		Used:       float64(used) / bytesPerGiB,
-		Avail:      float64(avail) / bytesPerGiB,
+		Size:       float64(size) / BytesPerGiB,
+		Used:       float64(used) / BytesPerGiB,
+		Avail:      float64(avail) / BytesPerGiB,
 		UsePercent: usePercent,
 	}
+}
+
+// DiskUsageFromBytes builds DiskUsage from raw byte counts and derives the
+// usage percentage from used and available space, so the values cannot
+// disagree with each other.
+func DiskUsageFromBytes(size, used, avail int64) DiskUsage {
+	var percent float64
+	if total := used + avail; total > 0 {
+		percent = float64(used) / float64(total) * 100
+	}
+	return NewDiskUsage(size, used, avail, percent)
 }
 
 func (du DiskUsage) SizeLabel() string  { return fmt.Sprintf("%.1f GiB", du.Size) }

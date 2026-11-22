@@ -2,17 +2,17 @@ package main
 
 import (
 	"context"
-	_ "embed"
 	"errors"
 	"fmt"
 	"html"
-	"html/template"
 	"log"
 	"net"
 	"net/http"
 	"os/exec"
 	"slices"
 	"time"
+
+	"github.com/mtvrsh/dashboard/ui"
 )
 
 const (
@@ -23,15 +23,8 @@ const (
 
 var defaultFuserCmd = []string{"fuser"}
 
-//go:embed index.template
-var index string
-
-//go:embed style.css
-var css []byte
-
 type server struct {
 	config config
-	main   *template.Template
 }
 
 func newServer() server {
@@ -49,8 +42,6 @@ func newServerFromConfig(path string) (server, error) {
 }
 
 func (s *server) serve() error {
-	s.main = template.Must(template.New("index.template").Parse(index))
-
 	http.HandleFunc("GET /", s.mainHandler)
 	http.HandleFunc("POST /command/{command}", s.commandHandler)
 	http.HandleFunc("GET /style.css", s.styleHandler)
@@ -67,7 +58,7 @@ func (s *server) mainHandler(w http.ResponseWriter, r *http.Request) {
 	info.Commands = s.getCommands()
 	info.CommandTimeoutMs = s.config.CommandTimeout.Milliseconds()
 
-	err = s.main.Execute(w, info)
+	err = ui.Render(w, info)
 	if err != nil {
 		log.Print(err)
 	}
@@ -84,7 +75,7 @@ func (s *server) commandHandler(w http.ResponseWriter, r *http.Request) {
 func (s *server) styleHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Cache-Control", "immutable, max-age=86400")
 	w.Header().Set("Content-Type", "text/css")
-	_, err := w.Write(css)
+	_, err := w.Write(ui.CSS)
 	if err != nil {
 		log.Print(err)
 	}
